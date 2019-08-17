@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "http_parser.tab.h"
-#include "http_parser.yy.h"
+#include "shahada.tab.h"
+#include "shahada.yy.h"
 
 int yyerror(yyscan_t yyscanner, const char *s);
 http_message_t *__PMessage;

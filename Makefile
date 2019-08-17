@@ -5,11 +5,11 @@ BIN = bin/shahada
 FLAGS =  -g -Wall
 INC = -I./ -I./inc -I./parser
 LINK_LIB = 
-OBJS        = obj/main.o obj/shahada.o obj/http_parser.tab.o obj/http_parser.yy.o
-GENERAT_SRC = parser/http_parser.tab.c parser/http_parser.tab.h parser/http_parser.yy.c parser/http_parser.yy.h
+OBJS        = obj/main.o obj/shahada.o obj/shahada.tab.o obj/shahada.yy.o
+GENERAT_SRC = parser/shahada.tab.c parser/shahada.tab.h parser/shahada.yy.c parser/shahada.yy.h
 
 
-all: build parser/http_parser.yy.c parser/http_parser.tab.c $(BIN)
+all: build parser/shahada.yy.c parser/shahada.tab.c $(BIN)
 .PHONY: all
 
 # /* Creates the directory if don't exists */
@@ -18,11 +18,11 @@ build:
 	@mkdir -p obj
 	@mkdir -p bin
 
-parser/http_parser.yy.c: grammar/http_parser.l
+parser/shahada.yy.c: grammar/shahada.l
 	$(LEX) --debug $^
 
-parser/http_parser.tab.c: grammar/http_parser.y
-	$(YACC) --debug --verbose -d -b http_parser $^ -o $@
+parser/shahada.tab.c: grammar/shahada.y
+	$(YACC) --debug --verbose -d -b shahada $^ -o $@
 
 # /*Creating Shared library i.e. libjson.so */
 $(BIN): $(OBJS)
@@ -39,9 +39,9 @@ obj/%.o: parser/%.c
 	$(CC) $(FLAGS) -c $< -o $@ $(INC)
 
 obj/main.o        : inc/shahada.h
-obj/shahada.o        : inc/shahada.h parser/http_parser.tab.h parser/http_parser.yy.h
-obj/http_parser.tab.o  : parser/http_parser.tab.c parser/http_parser.tab.h
-obj/http_parser.yy.o      : parser/http_parser.yy.c parser/http_parser.yy.h
+obj/shahada.o        : inc/shahada.h parser/shahada.tab.h parser/shahada.yy.h
+obj/http_parser.tab.o  : parser/shahada.tab.c parser/shahada.tab.h
+obj/http_parser.yy.o      : parser/shahada.yy.c parser/shahada.yy.h
 
 .PHONY: clean
 clean:

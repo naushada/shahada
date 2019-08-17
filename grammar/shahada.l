@@ -1,7 +1,7 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
-#include "http_parser.tab.h"								
+#include "shahada.tab.h"								
 #include "shahada.h"
 
 extern int yyerror(yyscan_t yyscanner, const char *s);
@@ -17,8 +17,8 @@ int yywrap(yyscan_t yyscanner)
 %option bison-bridge
 %option debug
 %option warn
-%option header-file="parser/http_parser.yy.h"
-%option outfile="parser/http_parser.yy.c"
+%option header-file="parser/shahada.yy.h"
+%option outfile="parser/shahada.yy.c"
  /*! This is to remove the warning message*/
 %option nounput
 %option noinput

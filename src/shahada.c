@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
-#include "http_parser.tab.h"
-#include "http_parser.yy.h"
+#include "shahada.tab.h"
+#include "shahada.yy.h"
 #include "shahada.h"
 
 http_message_t *__httpRspMessage(http_status_t *statusLine, 
