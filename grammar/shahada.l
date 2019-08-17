@@ -28,7 +28,7 @@ int yywrap(yyscan_t yyscanner)
 %x MIME_PARAM_SCAN MIME_PARAM_VALUE_SCAN 
 %x MESSAGE_BODY_SCAN_START MIME_DELIMITER 
 %x MIME_VALUE_DELIMITER
-%x HTTP_REQ HTTP_RSP
+%x HTTP_REQ HTTP_RSP QS_RES
 
 DIGIT                [0-9]
 INTEGER              -?(0|[1-9]{DIGIT}*)
@@ -47,13 +47,14 @@ DELIMITER            [:][ ]
  /*Any character except \r*/
 NOT_CR               [^\r]
 BODY_START           (\r\n\r\n\r\n|\r\n\r\n)
-DEFAULT_URI          ((\*)|(\/))    
-URI                  ((\*)|(\/([ALPHANUM])*))
+URI                  ((\*)|(\/))    
+RES                  ([ALPHANUM]*\?)
  /*URI                  [^\?]\?*/
 URI_DELIMETER        [?][ ]
-QS_PARAM             [^=]
+QS_PARAM             [ALPHANUM]*=
 QS_PARAM_DELIMITER   [=]
-QS_VALUE             ([^&]|[^ ])
+QS_VALUE             [ALPHANUM]*&
+NOT_SPACE            [^ ]
 
 
 %%
@@ -70,9 +71,42 @@ QS_VALUE             ([^&]|[^ ])
   return(SPACE);
 }
 
-<HTTP_REQ>{URI}+ {
+<HTTP_REQ>{URI} {
   yylval->str = strdup(yytext);
+  fprintf(stderr, "[Naushad] Moving to QS_RES State\n");
+  BEGIN(QS_RES);
+}
+
+<QS_RES>{RES}+ {
+ /*uri is having query string parameters.*/    
+  fprintf(stderr, "[Naushad] %s", yytext);
   return(RESOURCE);		
+}
+
+<QS_RES>'?' {
+  return('?');
+}
+ /*uri is not having query string parameters.*/
+<QS_RES>{NOT_SPACE}+ {
+  yylval->str = strdup(yytext);
+  fprintf(stderr, "[Naushad] The URI is %s", yytext);
+  return(RESOURCE);
+}
+<QS_RES>{QS_PARAM} {
+  return(PARAM);
+}
+
+<QS_RES>{QS_PARAM_DELIMITER} {
+  return(EQ);
+}
+
+<QS_RES>{QS_VALUE} {
+  return(VALUE);
+}
+
+<QS_RES>{SPACE} {
+  BEGIN(HTTP_REQ);
+  return(SPACE);
 }
 
 <HTTP_REQ>'?' {
