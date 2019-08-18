@@ -28,13 +28,13 @@ int yywrap(yyscan_t yyscanner)
 %x MIME_PARAM_SCAN MIME_PARAM_VALUE_SCAN 
 %x MESSAGE_BODY_SCAN_START MIME_DELIMITER 
 %x MIME_VALUE_DELIMITER
-%x HTTP_REQ HTTP_RSP QS_RES
+%x HTTP_REQ HTTP_RSP QS_RES QS_RES_VALUE
 
 DIGIT                [0-9]
 INTEGER              -?(0|[1-9]{DIGIT}*)
 NUMBER               {INTEGER}\.{DIGIT}+
 ALPHA                [a-zA-Z]
-ALPHANUM             [a-zA-Z0-9_-\.]
+ALPHANUM             [a-zA-Z0-9_\.\-]
 HEX                  [0-9a-fA-F]
 CRLF                 (\r\n)
 SPACE                [ \t]
@@ -47,14 +47,17 @@ DELIMITER            [:][ ]
  /*Any character except \r*/
 NOT_CR               [^\r]
 BODY_START           (\r\n\r\n\r\n|\r\n\r\n)
-URI                  ((\*)|(\/))    
-RES                  ([ALPHANUM]*\?)
+URI                  \/{ALPHANUM}*
+RES                  ^\/{ALPHANUM}+/\?
  /*URI                  [^\?]\?*/
 URI_DELIMETER        [?][ ]
-QS_PARAM             [ALPHANUM]*=
-QS_PARAM_DELIMITER   [=]
-QS_VALUE             [ALPHANUM]*&
+QS_PARAM             {ALPHANUM}+
+QS_PARAM_DELIMITER   =
+QS_VALUE             {ALPHANUM}+
 NOT_SPACE            [^ ]
+RESOURCE             ([ALPHANUM]*)[ ]
+WHAT                 (\?)
+AMPERSAND            (&)    
 
 
 %%
@@ -73,38 +76,37 @@ NOT_SPACE            [^ ]
 
 <HTTP_REQ>{URI} {
   yylval->str = strdup(yytext);
-  fprintf(stderr, "[Naushad] Moving to QS_RES State\n");
+  fprintf(stderr, "[Naushad] Moving to QS_RES State %s\n", yytext);
   BEGIN(QS_RES);
-}
-
-<QS_RES>{RES}+ {
- /*uri is having query string parameters.*/    
-  fprintf(stderr, "[Naushad] %s", yytext);
-  return(RESOURCE);		
-}
-
-<QS_RES>'?' {
-  return('?');
-}
- /*uri is not having query string parameters.*/
-<QS_RES>{NOT_SPACE}+ {
-  yylval->str = strdup(yytext);
-  fprintf(stderr, "[Naushad] The URI is %s", yytext);
   return(RESOURCE);
 }
+
+<QS_RES>{WHAT} {
+  return('?');
+}
+
 <QS_RES>{QS_PARAM} {
+  fprintf(stderr, "[Naushad] QS-Param is %s\n", yytext);
+  yylval->pField = strdup(yytext);
   return(PARAM);
 }
 
-<QS_RES>{QS_PARAM_DELIMITER} {
+<QS_RES>{EQ} {
+  BEGIN(QS_RES_VALUE);
   return(EQ);
 }
 
-<QS_RES>{QS_VALUE} {
+<QS_RES_VALUE>{QS_VALUE} {
+  fprintf(stderr, "[Naushad] QS_RES_VALUE is %s\n", yytext);
+  yylval->pValue = strdup(yytext);
   return(VALUE);
 }
 
-<QS_RES>{SPACE} {
+<QS_RES_VALUE>{AMPERSAND} {
+  BEGIN(QS_RES);
+}
+
+<QS_RES_VALUE>{SPACE} {
   BEGIN(HTTP_REQ);
   return(SPACE);
 }

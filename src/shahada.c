@@ -312,6 +312,7 @@ qs_param_ttt *__http_process_qs(char *pResource, qs_param_t *pQs)
 
     qs_param->resource_name = strdup(pResource);
     qs_param->qsParam = pQs;
+    fprintf(stderr, "[Naushad] %s:%d qs_param_t is Not Null\n", __FILE__, __LINE__);
     free(pResource);
 
   }while(0);
@@ -330,6 +331,7 @@ qs_param_t *__httpInsertQsParam(qs_param_t *qsParam,
 
   tmpNode->name = strdup(param);
   tmpNode->value = strdup(value);
+  tmpNode->next = NULL;
   free(param);
   free(value);
 
@@ -339,6 +341,8 @@ qs_param_t *__httpInsertQsParam(qs_param_t *qsParam,
     {
       qsParam = tmpNode;
       qsParam->next = NULL;
+      fprintf(stderr, "[Naushad]%s:%d param %s value %s\n", 
+              __FILE__, __LINE__,qsParam->name, qsParam->value);
       break;
     }
 
@@ -346,6 +350,8 @@ qs_param_t *__httpInsertQsParam(qs_param_t *qsParam,
     for(; head->next; head = head->next) ;
 
     head->next = tmpNode;
+    fprintf(stderr, "[Naushad]%s:%d param %s value %s\n", 
+            __FILE__, __LINE__,qsParam->name, qsParam->value);
     break;
 
   }while(0);
@@ -480,6 +486,7 @@ char *shahadaGetQsParamValue(char *qsParamName, void *msg)
 
   while(head)
   {
+    fprintf(stderr, "[Naushad]%s:%d param %s value %s\n", __FILE__, __LINE__, head->name, head->value);
     if(!strncmp(qsParamName, head->name, strlen(qsParamName)))
     {
       pQsParam = strdup(head->value);

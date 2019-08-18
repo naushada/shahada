@@ -7,7 +7,7 @@ int yydebug = 1;
 int main(int argc, char **argv) {
     void *pMsg = NULL;
   /*! Read input from File now.*/
-  char buff[2048] = "GET /abic.html HTTP/1.1\r\n"
+  char buff[2048] = "GET /abc.html?a=y HTTP/1.1\r\n"
                     "Host: 10.10.10.1\r\n"
                     "Content-Length: 101\r\n"
                     "Content-Type: json; txt/5.0\r\n"
@@ -31,9 +31,10 @@ int main(int argc, char **argv) {
   pMsg = __http_parser_ex(buff);
   char *fValue = shahadaGetFieldValue("Content-Length", pMsg);
   fprintf(stderr, "Value of Field is %s\n", fValue);
+  free(fValue);
   fprintf(stderr, "resource is %s\n", shahadaGetUri(pMsg));
   fprintf(stderr, "protocol is %d\n", shahadaGetProtocol(pMsg));
   fprintf(stderr, "method is %d\n", shahadaGetMethod(pMsg));
-  free(fValue);
+  fprintf(stderr, "param is %s\n", shahadaGetQsParamValue("a", pMsg));
   return(0);
 }
