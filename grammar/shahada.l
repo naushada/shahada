@@ -57,7 +57,9 @@ QS_VALUE             {ALPHANUM}+
 NOT_SPACE            [^ ]
 RESOURCE             ([ALPHANUM]*)[ ]
 WHAT                 (\?)
-AMPERSAND            (&)    
+AMPERSAND            (&)
+MIME_PARAM           {ALPHANUM}+
+COLON                (:)
 
 
 %%
@@ -93,7 +95,7 @@ AMPERSAND            (&)
 
 <QS_RES>{EQ} {
   BEGIN(QS_RES_VALUE);
-  return(EQ);
+  return('=');
 }
 
 <QS_RES_VALUE>{QS_VALUE} {
@@ -167,10 +169,14 @@ AMPERSAND            (&)
   return EOF;
 }
 
-<MIME_PARAM_SCAN>{NOT_COLON}+ {
+<MIME_PARAM_SCAN>{MIME_PARAM} {
   yylval->pField = strdup(yytext);
-  BEGIN MIME_DELIMITER;
   return(PARAM);
+}
+
+<MIME_PARAM_SCAN>{COLON} {
+  BEGIN(MIME_PARAM_VALUE_SCAN);  
+  return(':');
 }
 
 <MIME_DELIMITER>{DELIMITER}+ {

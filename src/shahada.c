@@ -286,6 +286,16 @@ void __httpDisplayMimeHeader(http_message_t *pHttpMessage)
       tmpHeader = tmpHeader->next;
     }
 
+    /*Query String.*/
+    qs_param_t *qs = pHttpMessage->http_req->qs_param->qsParam;
+    while(qs)
+    {
+      fprintf(stderr, "qsParam %s qsValue %s\n", qs->name,
+              qs->value);
+      qs = qs->next;
+
+    }
+
   }while(0);
 }
 
@@ -313,6 +323,8 @@ qs_param_ttt *__http_process_qs(char *pResource, qs_param_t *pQs)
     qs_param->resource_name = strdup(pResource);
     qs_param->qsParam = pQs;
     fprintf(stderr, "[Naushad] %s:%d qs_param_t is Not Null\n", __FILE__, __LINE__);
+    fprintf(stderr, "[Naushad] %s:%d pQs->name %s pQs->value %s\n", 
+            __FILE__, __LINE__,pQs->name, pQs->value);
     free(pResource);
 
   }while(0);

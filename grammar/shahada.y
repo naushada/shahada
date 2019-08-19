@@ -31,7 +31,7 @@ typedef void *yyscan_t;
 }
 
 /*! tokens are looked in lex file for pattern matching*/
-%token <str> lSTRING HTTP_METHOD HTTP_VERSION EQ RESOURCE CRLF SPACE
+%token <str> lSTRING HTTP_METHOD HTTP_VERSION RESOURCE CRLF SPACE
 %token <pField>  PARAM
 %token <pValue>  VALUE
 %token <status_code> STATUS_CODE
@@ -76,8 +76,8 @@ message_body
   ; 
 
 mime_headers
-  : PARAM SPACE VALUE CRLF                   {$$ = __httpInsertMimeHeader(NULL, $1, $3);} 
-  | mime_headers PARAM SPACE VALUE CRLF      {$$ = __httpInsertMimeHeader($1, $2, $4);}
+  : PARAM ':' VALUE CRLF                   {$$ = __httpInsertMimeHeader(NULL, $1, $3);} 
+  | mime_headers PARAM ':' VALUE CRLF      {$$ = __httpInsertMimeHeader($1, $2, $4);}
   ;
 
 request_line
@@ -90,8 +90,8 @@ qs
   ;
 
 qstring
-  : PARAM EQ VALUE            {$$ = __httpInsertQsParam(NULL, $1, $3);}
-  | qstring PARAM EQ VALUE    {$$ = __httpInsertQsParam($1, $2, $4);}
+  : PARAM '=' VALUE            {$$ = __httpInsertQsParam(NULL, $1, $3);}
+  | qstring PARAM '=' VALUE    {$$ = __httpInsertQsParam($1, $2, $4);}
   ;
 
 status_line
