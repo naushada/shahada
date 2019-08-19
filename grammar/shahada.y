@@ -95,7 +95,7 @@ qstring
   ;
 
 status_line
-  : HTTP_VERSION SPACE STATUS_CODE SPACE REASON_PHRASE CRLF {$$ = __httpStatusLine($1, $3, $5);}
+  : HTTP_VERSION SPACE STATUS_CODE REASON_PHRASE CRLF {$$ = __httpStatusLine($1, $3, $5);}
   ;
 
 %%

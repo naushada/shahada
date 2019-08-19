@@ -26,7 +26,7 @@ int yywrap(yyscan_t yyscanner)
 
  /*Exclusive State for HTTP Parsing State Matching*/
 %x MIME_PARAM_ST MIME_VALUE_ST 
-%x HTTP_BODY_ST
+%x HTTP_BODY_ST REASON_PHRASE_ST
 %x HTTP_REQ_ST HTTP_RSP_ST QS_PARAM_ST QS_VALUE_ST
 
 DIGIT                [0-9]
@@ -58,6 +58,10 @@ MIME_VALUE           [a-zA-Z0-9\.\/_\-\'\"; \*=;,]+
 QS_PARAM             {ALPHANUM}+
 QS_VALUE             {ALPHANUM}+
 
+ /*Reason Phrase*/
+STATUS_STR           [a-zA-Z\- \"\']+
+STATUS_CODE          {DIGIT}{3}
+
 
 %%
 
@@ -66,6 +70,14 @@ QS_VALUE             {ALPHANUM}+
   yylval->str = strdup(yytext);
   BEGIN(HTTP_REQ_ST);
   return(HTTP_METHOD);
+}
+
+ /*FSM for Response Status Line*/
+<INITIAL>{PROTOCOL} {
+  yylval->str = strdup(yytext);
+  BEGIN(HTTP_RSP_ST);
+  fprintf(stderr, "[Naushad] HTTP RESPONSE Moving to HTTP_RSP_ST\n");
+  return(HTTP_VERSION);
 }
 
  /*FSM For HTTP Request Line*/
@@ -121,27 +133,19 @@ QS_VALUE             {ALPHANUM}+
   return(CRLF);								
 }
 
- /*FSM for Response Status Line*/
-<INITIAL>{PROTOCOL} {
-  yylval->str = strdup(yytext);
-  BEGIN(HTTP_RSP_ST);
-  fprintf(stderr, "\nMoving to HTTP_RSP value %s len %d\n", yytext,(int)yyleng);
-  return(HTTP_VERSION);
+
+
+<HTTP_RSP_ST>{STATUS_CODE} {
+  yylval->status_code = atoi(yytext);
+  return(STATUS_CODE);
 }
 
 <HTTP_RSP_ST>{SPACE} {
   return(SPACE);
 }
-
-<HTTP_RSP_ST>{DIGIT}{3} {
-  yylval->status_code = atoi(yytext);
-  return(STATUS_CODE);
-}
-
  /*Reason-Phrase of Http-Response.*/
-<HTTP_RSP_ST>{NOT_CR}+ {
+<HTTP_RSP_ST>{STATUS_STR} {
   yylval->reason_phrase = strdup(yytext);
-  fprintf(stderr, "stderr, The value of Reason Phrase is %s\n", yytext);
   return(REASON_PHRASE);
 }
 
