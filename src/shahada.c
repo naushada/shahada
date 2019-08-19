@@ -213,7 +213,10 @@ http_qs_t *__httpRequestLine(char *pHttpMethod,
 
     __pReq->qs_param = pUri;
     fprintf(stderr, "\nResource Name is %s\n", __pReq->qs_param->resource_name);
-    free(pUri);
+    free(pHttpMethod);
+    pHttpMethod = NULL;
+    free(pHttpVersion);
+    pHttpVersion = NULL;
 
   }while(0);
 

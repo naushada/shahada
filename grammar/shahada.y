@@ -81,7 +81,7 @@ mime_headers
   ;
 
 request_line
-  : HTTP_METHOD SPACE qs SPACE HTTP_VERSION CRLF {$$ = __httpRequestLine($1, $3, $5);free($1);free($5);}
+  : HTTP_METHOD SPACE qs SPACE HTTP_VERSION CRLF {$$ = __httpRequestLine($1, $3, $5);}
   ;
 
 qs

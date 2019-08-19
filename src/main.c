@@ -35,6 +35,6 @@ int main(int argc, char **argv) {
   fprintf(stderr, "resource is %s\n", shahadaGetUri(pMsg));
   fprintf(stderr, "protocol is %d\n", shahadaGetProtocol(pMsg));
   fprintf(stderr, "method is %d\n", shahadaGetMethod(pMsg));
-  //fprintf(stderr, "param is %s\n", shahadaGetQsParamValue("a", pMsg));
+  fprintf(stderr, "value is %s\n", shahadaGetQsParamValue("a", pMsg));
   return(0);
 }
