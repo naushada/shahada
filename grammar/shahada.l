@@ -50,15 +50,12 @@ BODY_START           (\r\n\r\n\r\n|\r\n\r\n)
 URI                  \/{ALPHANUM}*
 RES                  ^\/{ALPHANUM}+/\?
  /*URI                  [^\?]\?*/
-URI_DELIMETER        [?][ ]
 QS_PARAM             {ALPHANUM}+
-QS_PARAM_DELIMITER   =
 QS_VALUE             {ALPHANUM}+
-NOT_SPACE            [^ ]
-RESOURCE             ([ALPHANUM]*)[ ]
 WHAT                 (\?)
 AMPERSAND            (&)
 MIME_PARAM           {ALPHANUM}+
+MIME_VALUE           [a-zA-Z0-9\.\/_\-\'\"; \*=;,] 
 COLON                (:)
 
 
@@ -179,23 +176,18 @@ COLON                (:)
   return(':');
 }
 
-<MIME_DELIMITER>{DELIMITER}+ {
-  BEGIN MIME_PARAM_VALUE_SCAN;
-  return(SPACE);
-}
-
-<MIME_PARAM_VALUE_SCAN>{NOT_CR}+ {
-  BEGIN MIME_VALUE_DELIMITER;
+<MIME_PARAM_VALUE_SCAN>{MIME_VALUE}+ {
   yylval->pValue = strdup(yytext);
+  fprintf(stderr, "[Naushad] MIME_VALE is %s\n", yytext);
   return(VALUE);
 }
 
-<MIME_VALUE_DELIMITER>{BODY_START} {
+<MIME_PARAM_VALUE_SCAN>{BODY_START} {
   BEGIN MESSAGE_BODY_SCAN_START;
   return(CRLF);
 }
 
-<MIME_VALUE_DELIMITER>{CRLF} {
+<MIME_PARAM_VALUE_SCAN>{CRLF} {
   BEGIN MIME_PARAM_SCAN;
   return(CRLF);
 }
