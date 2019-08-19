@@ -24,11 +24,10 @@ int yywrap(yyscan_t yyscanner)
 %option noinput
 
 
- /*Exclusive State for String Matching*/
-%x MIME_PARAM_SCAN MIME_PARAM_VALUE_SCAN 
-%x MESSAGE_BODY_SCAN_START MIME_DELIMITER 
-%x MIME_VALUE_DELIMITER
-%x HTTP_REQ HTTP_RSP QS_RES QS_RES_VALUE
+ /*Exclusive State for HTTP Parsing State Matching*/
+%x MIME_PARAM_ST MIME_VALUE_ST 
+%x HTTP_BODY_ST
+%x HTTP_REQ_ST HTTP_RSP_ST QS_PARAM_ST QS_VALUE_ST
 
 DIGIT                [0-9]
 INTEGER              -?(0|[1-9]{DIGIT}*)
@@ -41,22 +40,23 @@ SPACE                [ \t]
 EQ                   (=)
 PROTOCOL             (HTTP)\/{DIGIT}\.{DIGIT} 
 METHOD               (OPTIONS|GET|HEAD|POST|PUT|DELETE|TRACE|CONNECT)
- /*Any Character except : which is the delimeter of FIELD*/
-NOT_COLON            [^:]
-DELIMITER            [:][ ]
  /*Any character except \r*/
 NOT_CR               [^\r]
-BODY_START           (\r\n\r\n\r\n|\r\n\r\n)
 URI                  \/{ALPHANUM}*
-RES                  ^\/{ALPHANUM}+/\?
- /*URI                  [^\?]\?*/
-QS_PARAM             {ALPHANUM}+
-QS_VALUE             {ALPHANUM}+
+
+ /*Delimiters*/
 WHAT                 (\?)
 AMPERSAND            (&)
-MIME_PARAM           {ALPHANUM}+
-MIME_VALUE           [a-zA-Z0-9\.\/_\-\'\"; \*=;,] 
 COLON                (:)
+BODY_START           (\r\n\r\n\r\n|\r\n\r\n)
+
+ /*HTTP Header's Parameters field-name: field-value*/    
+MIME_PARAM           {ALPHANUM}+
+MIME_VALUE           [a-zA-Z0-9\.\/_\-\'\"; \*=;,]+ 
+
+ /*Query-string parameters of form field-name=field-value*/
+QS_PARAM             {ALPHANUM}+
+QS_VALUE             {ALPHANUM}+
 
 
 %%
@@ -64,148 +64,143 @@ COLON                (:)
  /*Initial state of LEX*/
 <INITIAL>{METHOD} {
   yylval->str = strdup(yytext);
-  BEGIN(HTTP_REQ);
+  BEGIN(HTTP_REQ_ST);
   return(HTTP_METHOD);
 }
 
  /*FSM For HTTP Request Line*/
-<HTTP_REQ>{SPACE} {
+<HTTP_REQ_ST>{SPACE} {
   return(SPACE);
 }
 
-<HTTP_REQ>{URI} {
+<HTTP_REQ_ST>{URI} {
   yylval->str = strdup(yytext);
-  fprintf(stderr, "[Naushad] Moving to QS_RES State %s\n", yytext);
-  BEGIN(QS_RES);
+  BEGIN(QS_PARAM_ST);
   return(RESOURCE);
 }
 
-<QS_RES>{WHAT} {
+<QS_PARAM_ST>{WHAT} {
   return('?');
 }
 
-<QS_RES>{QS_PARAM} {
-  fprintf(stderr, "[Naushad] QS-Param is %s\n", yytext);
+<QS_PARAM_ST>{QS_PARAM} {
   yylval->pField = strdup(yytext);
   return(PARAM);
 }
 
-<QS_RES>{EQ} {
-  BEGIN(QS_RES_VALUE);
+<QS_PARAM_ST>{EQ} {
+  BEGIN(QS_VALUE_ST);
   return('=');
 }
 
-<QS_RES_VALUE>{QS_VALUE} {
-  fprintf(stderr, "[Naushad] QS_RES_VALUE is %s\n", yytext);
+<QS_VALUE_ST>{QS_VALUE} {
   yylval->pValue = strdup(yytext);
   return(VALUE);
 }
 
-<QS_RES_VALUE>{AMPERSAND} {
-  BEGIN(QS_RES);
+<QS_VALUE_ST>{AMPERSAND} {
+  BEGIN(QS_PARAM_ST);
 }
 
-<QS_RES_VALUE>{SPACE} {
-  BEGIN(HTTP_REQ);
+<QS_VALUE_ST>{SPACE} {
+  BEGIN(HTTP_REQ_ST);
   return(SPACE);
 }
 
-<HTTP_REQ>'?' {
+<HTTP_REQ_ST>'?' {
   return('?');
 }
 
-<HTTP_REQ>{PROTOCOL} {
+<HTTP_REQ_ST>{PROTOCOL} {
   yylval->str = strdup(yytext);
-  return HTTP_VERSION;
+  return(HTTP_VERSION);
 }
 
-<HTTP_REQ>{CRLF} {
-  BEGIN MIME_PARAM_SCAN;
-  /*! End of line */
-  return CRLF;								
+<HTTP_REQ_ST>{CRLF} {
+  BEGIN(MIME_PARAM_ST);
+  return(CRLF);								
 }
 
  /*FSM for Response Status Line*/
 <INITIAL>{PROTOCOL} {
   yylval->str = strdup(yytext);
-  BEGIN(HTTP_RSP);
+  BEGIN(HTTP_RSP_ST);
   fprintf(stderr, "\nMoving to HTTP_RSP value %s len %d\n", yytext,(int)yyleng);
   return(HTTP_VERSION);
 }
 
-<HTTP_RSP>{SPACE} {
+<HTTP_RSP_ST>{SPACE} {
   return(SPACE);
 }
 
-<HTTP_RSP>{DIGIT}{3} {
+<HTTP_RSP_ST>{DIGIT}{3} {
   yylval->status_code = atoi(yytext);
-  return (STATUS_CODE);
+  return(STATUS_CODE);
 }
 
  /*Reason-Phrase of Http-Response.*/
-<HTTP_RSP>{NOT_CR}+ {
+<HTTP_RSP_ST>{NOT_CR}+ {
   yylval->reason_phrase = strdup(yytext);
   fprintf(stderr, "stderr, The value of Reason Phrase is %s\n", yytext);
-  return (REASON_PHRASE);
+  return(REASON_PHRASE);
 }
 
  /*End of Status Line.*/
-<HTTP_RSP>{CRLF} {
-  BEGIN MIME_PARAM_SCAN;
+<HTTP_RSP_ST>{CRLF} {
+  BEGIN(MIME_PARAM_ST);
   /*! End of line */
-  return CRLF;								
+  return(CRLF);								
 }
 
 <INITIAL><<EOF>> {
   printf("Parsed successfully\n");
-  return EOF;
+  return(EOF);
 }
 
-<MIME_PARAM_SCAN><<EOF>> {
+<MIME_PARAM_ST><<EOF>> {
   printf("Parsed successfully\n");
-  return EOF;
+  return(EOF);
 }
 
-<MIME_PARAM_SCAN>{MIME_PARAM} {
+<MIME_PARAM_ST>{MIME_PARAM} {
   yylval->pField = strdup(yytext);
   return(PARAM);
 }
 
-<MIME_PARAM_SCAN>{COLON} {
-  BEGIN(MIME_PARAM_VALUE_SCAN);  
+<MIME_PARAM_ST>{COLON} {
+  BEGIN(MIME_VALUE_ST);  
   return(':');
 }
 
-<MIME_PARAM_VALUE_SCAN>{MIME_VALUE}+ {
+<MIME_VALUE_ST>{MIME_VALUE} {
   yylval->pValue = strdup(yytext);
-  fprintf(stderr, "[Naushad] MIME_VALE is %s\n", yytext);
   return(VALUE);
 }
 
-<MIME_PARAM_VALUE_SCAN>{BODY_START} {
-  BEGIN MESSAGE_BODY_SCAN_START;
+<MIME_VALUE_ST>{BODY_START} {
+  BEGIN(HTTP_BODY_ST);
   return(CRLF);
 }
 
-<MIME_PARAM_VALUE_SCAN>{CRLF} {
-  BEGIN MIME_PARAM_SCAN;
+<MIME_VALUE_ST>{CRLF} {
+  BEGIN(MIME_PARAM_ST);
   return(CRLF);
 }
 
  /*! move to initial stae upon receipt of EOF - End-of-File*/
-<MESSAGE_BODY_SCAN_START><<EOF>> {
-  BEGIN INITIAL;  
+<HTTP_BODY_ST><<EOF>> {
+  BEGIN(INITIAL);  
   return(EOF);
 }
 
  /*! HTTP Body ends with single CRLF*/
-<MESSAGE_BODY_SCAN_START>{CRLF} {
+<HTTP_BODY_ST>{CRLF} {
   /*!move to INITIAL state.*/    
-  BEGIN INITIAL;  
+  BEGIN(INITIAL);  
   return(CRLF);
 }
 
-<MESSAGE_BODY_SCAN_START>{NOT_CR}+ {
+<HTTP_BODY_ST>{NOT_CR}+ {
   yylval->str = strdup(yytext);
   return(lSTRING);
 }
