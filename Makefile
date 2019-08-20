@@ -5,7 +5,7 @@ BIN = bin/shahada
 FLAGS =  -g -Wall
 INC = -I./ -I./inc -I./parser
 LINK_LIB = 
-OBJS        = obj/main.o obj/shahada.o obj/shahada.tab.o obj/shahada.yy.o
+OBJS        = obj/main.o obj/shahada.o obj/shahada.tab.o obj/shahada.yy.o obj/test.o
 GENERAT_SRC = parser/shahada.tab.c parser/shahada.tab.h parser/shahada.yy.c parser/shahada.yy.h
 
 
@@ -38,7 +38,8 @@ obj/%.o: src/%.c
 obj/%.o: parser/%.c
 	$(CC) $(FLAGS) -c $< -o $@ $(INC)
 
-obj/main.o        : inc/shahada.h
+obj/test.o        :	inc/test.h
+obj/main.o        : inc/shahada.h inc/test.h
 obj/shahada.o        : inc/shahada.h parser/shahada.tab.h parser/shahada.yy.h
 obj/http_parser.tab.o  : parser/shahada.tab.c parser/shahada.tab.h
 obj/http_parser.yy.o      : parser/shahada.yy.c parser/shahada.yy.h

@@ -40,8 +40,7 @@ SPACE                [ \t]
 EQ                   (=)
 PROTOCOL             (HTTP)\/{DIGIT}\.{DIGIT} 
 METHOD               (OPTIONS|GET|HEAD|POST|PUT|DELETE|TRACE|CONNECT)
- /*Any character except \r*/
-NOT_CR               [^\r]
+
 URI                  \/{ALPHANUM}*
 
  /*Delimiters*/
@@ -52,7 +51,7 @@ BODY_START           (\r\n\r\n\r\n|\r\n\r\n)
 
  /*HTTP Header's Parameters field-name: field-value*/    
 MIME_PARAM           {ALPHANUM}+
-MIME_VALUE           [a-zA-Z0-9\.\/_\-\'\"; \*=;,]+ 
+MIME_VALUE           [a-zA-Z0-9\.\/_\-\'\"; \*=;,+]+ 
 
  /*Query-string parameters of form field-name=field-value*/
 QS_PARAM             {ALPHANUM}+
@@ -61,6 +60,7 @@ QS_VALUE             {ALPHANUM}+
  /*Reason Phrase*/
 STATUS_STR           [a-zA-Z\- \"\']+
 STATUS_CODE          {DIGIT}{3}
+HTTP_BODY            [a-zA-Z\.\/\&=;\*\-+_]+
 
 
 %%
@@ -68,6 +68,7 @@ STATUS_CODE          {DIGIT}{3}
  /*Initial state of LEX*/
 <INITIAL>{METHOD} {
   yylval->str = strdup(yytext);
+  /*This is going to be HTTP REQuest.*/
   BEGIN(HTTP_REQ_ST);
   return(HTTP_METHOD);
 }
@@ -75,6 +76,7 @@ STATUS_CODE          {DIGIT}{3}
  /*FSM for Response Status Line*/
 <INITIAL>{PROTOCOL} {
   yylval->str = strdup(yytext);
+  /*This is going to be HTT RESponse.*/
   BEGIN(HTTP_RSP_ST);
   return(HTTP_VERSION);
 }
@@ -84,6 +86,7 @@ STATUS_CODE          {DIGIT}{3}
   return(SPACE);
 }
 
+ /*URI can be default URI meaning / or with Query String.*/
 <HTTP_REQ_ST>{URI} {
   yylval->str = strdup(yytext);
   BEGIN(QS_PARAM_ST);
@@ -109,6 +112,7 @@ STATUS_CODE          {DIGIT}{3}
   return(VALUE);
 }
 
+ /*Query String will be separated with &*/
 <QS_VALUE_ST>{AMPERSAND} {
   BEGIN(QS_PARAM_ST);
 }
@@ -116,10 +120,6 @@ STATUS_CODE          {DIGIT}{3}
 <QS_VALUE_ST>{SPACE} {
   BEGIN(HTTP_REQ_ST);
   return(SPACE);
-}
-
-<HTTP_REQ_ST>'?' {
-  return('?');
 }
 
 <HTTP_REQ_ST>{PROTOCOL} {
@@ -132,8 +132,6 @@ STATUS_CODE          {DIGIT}{3}
   return(CRLF);								
 }
 
-
-
 <HTTP_RSP_ST>{STATUS_CODE} {
   yylval->status_code = atoi(yytext);
   return(STATUS_CODE);
@@ -142,6 +140,7 @@ STATUS_CODE          {DIGIT}{3}
 <HTTP_RSP_ST>{SPACE} {
   return(SPACE);
 }
+
  /*Reason-Phrase of Http-Response.*/
 <HTTP_RSP_ST>{STATUS_STR} {
   yylval->reason_phrase = strdup(yytext);
@@ -203,7 +202,7 @@ STATUS_CODE          {DIGIT}{3}
   return(CRLF);
 }
 
-<HTTP_BODY_ST>{NOT_CR}+ {
+<HTTP_BODY_ST>{HTTP_BODY} {
   yylval->str = strdup(yytext);
   return(lSTRING);
 }
