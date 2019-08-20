@@ -114,7 +114,6 @@ qs_param_ttt *__http_process_qs(char *pResource, qs_param_t *pQs);
 int __http_process_default_uri(void);
 int __http_process_options(void);
 
-void *__http_parser_ex(char *pIn);
 
 http_message_t *http_init(void);
 
@@ -152,6 +151,8 @@ qs_param_t *__httpInsertQsParam(qs_param_t *qsParam,
                                 char *param, 
                                 char *value);
 
+void *shahadaHttpParserStart(char *pIn);
+void shahadaHttpParserEnd(void *handle);
 char *shahadaGetFieldValue(char *field_name, void *msg);
 char *shahadaGetUri(void *pMsg);
 char *shahadaGetQsParamValue(char *qsParamName, void *pMsg);

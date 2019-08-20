@@ -4,6 +4,8 @@
 
 char *__testHttpReqPost(void)
 {
+  char *pBuff = NULL;
+
   char buff[2048] = "POST /abc.html HTTP/1.1\r\n"
                     "Host: 10.10.10.1\r\n"
                     "Content-Length: 101\r\n"
@@ -14,7 +16,8 @@ char *__testHttpReqPost(void)
                     "\r\n\r\n"
                     "a=b&c=d\r\n";
 
-  return(strdup(buff));
+  pBuff = strdup(buff);
+  return(pBuff);
 }
 
 char *__testHttpReqGet(void)

@@ -394,7 +394,18 @@ int __http_process_default_uri(void)
   return(0);		
 }
 
-void *__http_parser_ex(char *pIn) 
+int __http_process_options(void)
+{
+  fprintf(stderr,"Processing options");
+	return 0;
+}
+
+/*********************************************************
+ *
+ * Exposed API for application.
+ *
+ ********************************************************/
+void *shahadaHttpParserStart(char *pIn) 
 {
   yyscan_t yyscanner;
   extern http_message_t *__PMessage;
@@ -420,17 +431,6 @@ void *__http_parser_ex(char *pIn)
   return((void *)__PMessage);
 }
 
-int __http_process_options(void)
-{
-  fprintf(stderr,"Processing options");
-	return 0;
-}
-
-/*********************************************************
- *
- * Exposed API for application.
- *
- ********************************************************/
 char *shahadaGetFieldValue(char *field_name, void *pMsg)
 {
   http_message_t *msg = (http_message_t *)pMsg;  
@@ -502,7 +502,7 @@ char *shahadaGetQsParamValue(char *qsParamName, void *msg)
   while(head)
   {
     fprintf(stderr, "[Naushad]%s:%d param %s value %s\n", __FILE__, __LINE__, head->name, head->value);
-    if(!strncmp(qsParamName, head->name, strlen(qsParamName)))
+    if(!strncmp(qsParamName, head->name, strlen(head->name)))
     {
       pQsParam = strdup(head->value);
       break;

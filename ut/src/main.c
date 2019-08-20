@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "shahada.h"
 #include "test.h"
 
@@ -9,8 +10,8 @@ int main(int argc, char **argv)
 {
   void *pMsg = NULL;
   char *__pBuff = NULL;
-
-  pMsg = __http_parser_ex(__pBuff);
+  __pBuff = __testHttpReqWithBody("aa=vv");
+  pMsg = shahadaHttpParserStart(__pBuff);
   char *fValue = shahadaGetFieldValue("Content-Length", pMsg);
   fprintf(stderr, "Value of Field is %s\n", fValue);
   free(fValue);

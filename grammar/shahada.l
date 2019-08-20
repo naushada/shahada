@@ -93,6 +93,12 @@ HTTP_BODY            [a-zA-Z\.\/\&=;\*\-+_]+
   return(RESOURCE);
 }
 
+ /*Case- Just a URI without QS Parameters.*/
+<QS_PARAM_ST>{SPACE} {
+  BEGIN(HTTP_REQ_ST);
+  return(SPACE);
+}
+
 <QS_PARAM_ST>{WHAT} {
   return('?');
 }
