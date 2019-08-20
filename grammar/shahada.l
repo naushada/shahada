@@ -76,7 +76,6 @@ STATUS_CODE          {DIGIT}{3}
 <INITIAL>{PROTOCOL} {
   yylval->str = strdup(yytext);
   BEGIN(HTTP_RSP_ST);
-  fprintf(stderr, "[Naushad] HTTP RESPONSE Moving to HTTP_RSP_ST\n");
   return(HTTP_VERSION);
 }
 
