@@ -162,6 +162,7 @@ int shahadaGetStatusCode(void *pMsg);
 int shahadaGetMethod(void *pMsg);
 int shahadaGetProtocol(void *pMsg);
 
+void shahadaHttpParserEnd(void *pIn);
 
 
 #endif /*__HTTP_H__*/

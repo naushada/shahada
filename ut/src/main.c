@@ -14,7 +14,7 @@ int main(int argc, char **argv)
   do 
   {
     ch = __getInput();
-
+    /*ch is having ASCII value and by subtracting '0' gives numerical value.*/
     switch(ch - '0')
     {
       case 1:
@@ -40,26 +40,19 @@ int main(int argc, char **argv)
     }
 
     pMsg = shahadaHttpParserStart(__pBuff);
+    free(__pBuff);
+    __pBuff = NULL;
     char *fValue = shahadaGetFieldValue("Content-Length", pMsg);
     fprintf(stderr, "Value of Field is %s\n", fValue);
     free(fValue);
+    char *tt = NULL;
 
-    fprintf(stderr, "resource is %s\n", shahadaGetUri(pMsg));
+    //fprintf(stderr, "resource is %s\n", shahadaGetUri(pMsg));
     fprintf(stderr, "protocol is %d\n", shahadaGetProtocol(pMsg));
-    fprintf(stderr, "method is %d\n", shahadaGetMethod(pMsg));
-    fprintf(stderr, "value is %s\n", shahadaGetQsParamValue("a", pMsg));
+    //fprintf(stderr, "method is %d\n", shahadaGetMethod(pMsg));
+    //fprintf(stderr, "value is %s\n", tt = shahadaGetQsParamValue("a", pMsg));
+    //free(tt);
+
+    shahadaHttpParserEnd(pMsg);
   }while(1);
-}
-
-int __getInput(void)
-{
-  fprintf(stderr, "1.......__testHttpReqPost \n"
-                  "2.......__testHttpReqGet \n"
-                  "3.......__testHtpRsp \n"
-                  "4.......__testHttpReqWithQs \n"
-                  "5.......__testHttpRspWithBody \n"
-                  "6.......__testHttpReqWithBody \n"
-                  "7.......End \n");
-  return(getchar());
-
 }

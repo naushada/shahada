@@ -1,6 +1,7 @@
 #ifndef __TEST_C__
 #define __TEST_C__
 #include <string.h>
+#include <stdio.h>
 
 char *__testHttpReqPost(void)
 {
@@ -91,6 +92,19 @@ char *__testHttpReqWithBody(char *body)
                     "a=b&c=d\r\n";
 
   return(strdup(buff));
+}
+
+int __getInput(void)
+{
+  fprintf(stderr, "1.......__testHttpReqPost \n"
+                  "2.......__testHttpReqGet \n"
+                  "3.......__testHtpRsp \n"
+                  "4.......__testHttpReqWithQs \n"
+                  "5.......__testHttpRspWithBody \n"
+                  "6.......__testHttpReqWithBody \n"
+                  "7.......End \n");
+  return(getchar());
+
 }
 
 #endif /*__TEST_C__*/

@@ -509,15 +509,23 @@ char *shahadaGetFieldValue(char *field_name, void *pMsg)
 int shahadaGetMethod(void *msg)
 {
   http_message_t *pMsg = (http_message_t *)msg;  
-  http_qs_t *head = pMsg ? pMsg->http_req: NULL;
-  return(head ? (int)head->method :-1);
+  http_qs_t *__req = pMsg ? pMsg->http_req: NULL;
+
+  if(__req) return(__req->method);
+
+  return(-1);
 }
 
 int shahadaGetProtocol(void *msg)
 {
   http_message_t *pMsg = (http_message_t *)msg;  
-  http_qs_t *head = pMsg ? pMsg->http_req: NULL;
-  return(head ? (int)head->version :-1);
+  http_qs_t *__req = pMsg ? pMsg->http_req: NULL;
+  http_status_t *__status = pMsg ? pMsg->status_line: NULL;
+
+  if(__req) return(__req->version);
+  if(__status) return(__status->protocol);
+
+  return(-1);
 }
 
 char *shahadaGetUri(void *msg)
@@ -525,7 +533,8 @@ char *shahadaGetUri(void *msg)
   http_message_t *pMsg = (http_message_t *)msg;  
   char *pUri = NULL;
   http_qs_t *head = pMsg ? pMsg->http_req: NULL;
-  assert(head != NULL);
+
+  if(!head) return((char *)0);
 
   pUri = strdup(head->qs_param->resource_name);
   fprintf(stderr, "%s:%d Uri is %s\n", __FILE__, __LINE__, head->qs_param->resource_name);
@@ -536,15 +545,17 @@ char *shahadaGetQsParamValue(char *qsParamName, void *msg)
 {
   http_message_t *pMsg = (http_message_t *)msg;  
   char *pQsParam = NULL;
-  qs_param_t *head = pMsg ? pMsg->http_req->qs_param->qsParam: NULL;
- 
-  assert(qsParamName != NULL);
+  qs_param_t *head = NULL;
 
-  if(!head)
+  if(pMsg && pMsg->http_req && pMsg->http_req->qs_param)
   {
-     return(pQsParam);    
+    head = pMsg ? pMsg->http_req->qs_param->qsParam: NULL;
   }
-
+  else
+  {
+    return(pQsParam);
+  }
+        
   while(head)
   {
     fprintf(stderr, "[Naushad]%s:%d param %s value %s\n", __FILE__, __LINE__, head->name, head->value);
@@ -583,3 +594,89 @@ char *shahadaGetReasonPhrase(void *msg)
 }
 
 
+void shahadaHttpParserEnd(void *pIn)
+{
+  http_message_t *pMsg = (http_message_t *)pIn;
+  do 
+  {
+    if(!pMsg)
+      break;
+
+    /*freeing http_request buffer.*/
+    if(pMsg->http_req && pMsg->http_req->qs_param)
+    {
+      if(pMsg->http_req->qs_param->resource_name)
+      {
+        free(pMsg->http_req->qs_param->resource_name);    
+      }
+      qs_param_t *head = pMsg->http_req->qs_param->qsParam;
+      qs_param_t *tmp = NULL;
+
+      while(head && head->next)
+      {
+        tmp = head;
+        head = head->next;
+        free(tmp);
+      }
+     
+      if(head) free(head);
+      pMsg->http_req->qs_param = NULL;
+      free(pMsg->http_req);
+      pMsg->http_req = NULL;
+    }
+
+    /*Freeing status line.*/
+    if(pMsg->status_line && pMsg->status_line->reasonPhrase)
+    {
+      free(pMsg->status_line->reasonPhrase);      
+      free(pMsg->status_line);      
+    }
+
+    /*freeing mime-headers.*/
+    if(pMsg->http_headers)
+    {
+      http_headers_t *head = pMsg->http_headers;
+      http_headers_t *tmp = NULL;
+
+      while(head && head->next)
+      {
+        tmp = head;
+        head = head->next;
+        if(tmp->header)
+        {
+          free(tmp->header->field);
+          free(tmp->header->value);
+          free(tmp);
+        }
+      }
+
+      if(head)
+      {
+        free(head->header->field);    
+        free(head->header->value);
+        free(head);
+      }
+    }
+    /*freeing http-body.*/
+
+    if(pMsg->http_body)
+    {
+      http_body_t *head = pMsg->http_body;
+      http_body_t *tmp = NULL;
+
+      while(head && head->next)
+      {
+        tmp = head;
+        head = head->next;
+        if(tmp->http_body) free(tmp->http_body);
+        free(tmp);
+      }
+
+      if(head && head->http_body)
+      {
+        free(head->http_body);
+        free(head);
+      }
+    }
+  }while(0);
+}
