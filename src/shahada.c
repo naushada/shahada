@@ -272,7 +272,7 @@ http_header_t *__httpNewMimeHeader(char *pMimeFieldName,
   return(fNode);
 }
 
-void __httpDisplayMimeHeader(http_message_t *pHttpMessage)
+void __httpDisplay(http_message_t *pHttpMessage)
 {
   do 
   {
@@ -281,24 +281,70 @@ void __httpDisplayMimeHeader(http_message_t *pHttpMessage)
       /*Add the debug log.*/
       break;
     }
-   
+  
+    /*Displaying http-request*/
+    if(pHttpMessage->http_req)
+    {
+      fprintf(stderr, "Method %d Protocol Version %d ", 
+              pHttpMessage->http_req->method,
+              pHttpMessage->http_req->version);
+
+      /*Query String if any.*/
+      if(pHttpMessage->http_req->qs_param)
+      {
+        fprintf(stderr, "URI is %s ", 
+                pHttpMessage->http_req->qs_param->resource_name);
+        qs_param_t *tmp = pHttpMessage->http_req->qs_param->qsParam;
+
+        while(tmp)
+        {
+          fprintf(stderr, "Param %s Value %s",
+                  tmp->name,tmp->value);
+          tmp = tmp->next;
+          fprintf(stderr, " ");
+        }
+        fprintf(stderr, "\n");
+      }
+    }
+
+    /*Displaying status line.*/
+    if(pHttpMessage->status_line)
+    {
+      fprintf(stderr, "Status code %d Protocol version %d ", 
+              pHttpMessage->status_line->status_code,
+              pHttpMessage->status_line->protocol);
+      if(pHttpMessage->status_line->reasonPhrase)
+      {
+        fprintf(stderr, "Reason Phrase %s \n", pHttpMessage->status_line->reasonPhrase);
+      }
+    }
+
+    /*Displaying http-headers.*/
     http_headers_t *tmpHeader = pHttpMessage->http_headers;
     while(tmpHeader)
     {
-      fprintf(stderr, "Field Name: %s Value: %s\n", tmpHeader->header->field, tmpHeader->header->value);
+      fprintf(stderr, "Field Name: %s Field Value: %s\n", 
+              tmpHeader->header->field, 
+              tmpHeader->header->value);
+
       tmpHeader = tmpHeader->next;
     }
+    fprintf(stderr, "\n");
 
-    /*Query String.*/
-    qs_param_t *qs = pHttpMessage->http_req->qs_param->qsParam;
-    while(qs)
+    /*Displaying Http-Body*/
+    if(pHttpMessage->http_body && pHttpMessage->http_body->http_body)
     {
-      fprintf(stderr, "qsParam %s qsValue %s\n", qs->name,
-              qs->value);
-      qs = qs->next;
+      fprintf(stderr, "Http Body %s ",
+              pHttpMessage->http_body->http_body);
 
+      http_body_t *tmp = pHttpMessage->http_body->next;
+      while(tmp)
+      {
+        fprintf(stderr, "Http Body %s ",
+                tmp->http_body);
+        tmp = tmp->next; 
+      }
     }
-
   }while(0);
 }
 

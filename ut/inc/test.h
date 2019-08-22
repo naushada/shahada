@@ -7,6 +7,7 @@ char *__testHtpRsp(void);
 char *__testHttpReqWithQs(char *Qs);
 char *__testHttpRspWithBody(char *body);
 char *__testHttpReqWithBody(char *body);
+int __getInput(void);
 
 
 #endif /*__TEST_H__*/

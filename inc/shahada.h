@@ -124,7 +124,7 @@ http_qs_t *__httpRequestLine(char *pHttpMethod,
 http_header_t *__httpNewMimeHeader(char *pMimeFieldName, 
                                    char *pMimeFieldValue);
 
-void __httpDisplayMimeHeader(http_message_t *pHttpMessage);
+void __httpDisplay(http_message_t *pHttpMessage);
 
 http_headers_t *__httpAddMimeHeader(http_headers_t *headers, 
                                     http_header_t *newNode);

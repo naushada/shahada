@@ -57,7 +57,7 @@ typedef void *yyscan_t;
 %%
 
 generic_message
-  : http_message  {__PMessage = $1;__httpDisplayMimeHeader($1);}
+  : http_message  {__PMessage = $1;__httpDisplay($1);}
   ;
 
 http_message
