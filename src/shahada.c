@@ -54,6 +54,7 @@ http_body_t *__httpInsertBody(http_body_t *head, char *body)
   tmp->http_body = strdup(body);
   tmp->body_len = strlen(body);
   tmp->next = NULL;
+  free(body);
 
   if(!head)
   {
@@ -616,10 +617,18 @@ void shahadaHttpParserEnd(void *pIn)
       {
         tmp = head;
         head = head->next;
+        free(tmp->name);
+        free(tmp->value);
         free(tmp);
       }
      
-      if(head) free(head);
+      if(head)
+      {
+        free(head->name);
+        free(head->value);
+        free(head);
+      }
+      free(pMsg->http_req->qs_param);
       pMsg->http_req->qs_param = NULL;
       free(pMsg->http_req);
       pMsg->http_req = NULL;
@@ -646,6 +655,7 @@ void shahadaHttpParserEnd(void *pIn)
         {
           free(tmp->header->field);
           free(tmp->header->value);
+          free(tmp->header);
           free(tmp);
         }
       }
@@ -654,6 +664,7 @@ void shahadaHttpParserEnd(void *pIn)
       {
         free(head->header->field);    
         free(head->header->value);
+        free(head->header);
         free(head);
       }
     }
@@ -678,5 +689,11 @@ void shahadaHttpParserEnd(void *pIn)
         free(head);
       }
     }
+
+    /*free the message itself.*/
+    free(pMsg);
   }while(0);
+
+  /*Return the control explicitly.*/
+  return;
 }
