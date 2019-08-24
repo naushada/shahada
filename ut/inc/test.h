@@ -8,6 +8,8 @@ char *__testHttpReqWithQs(char *Qs);
 char *__testHttpRspWithBody(char *body);
 char *__testHttpReqWithBody(char *body);
 int __getInput(void);
+char *__testHttpChunkedRsp(char *body);
+char *__testHttpMultipleChunkedRsp(char *body);
 
 
 #endif /*__TEST_H__*/

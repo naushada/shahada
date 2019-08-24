@@ -26,7 +26,7 @@ int yywrap(yyscan_t yyscanner)
 
  /*Exclusive State for HTTP Parsing State Matching*/
 %x MIME_PARAM_ST MIME_VALUE_ST 
-%x HTTP_BODY_ST REASON_PHRASE_ST
+%x HTTP_BODY_ST REASON_PHRASE_ST HTTP_CHUNKED_BOBY_ST
 %x HTTP_REQ_ST HTTP_RSP_ST QS_PARAM_ST QS_VALUE_ST
 
 DIGIT                [0-9]
@@ -61,6 +61,8 @@ QS_VALUE             {ALPHANUM}+
 STATUS_STR           [a-zA-Z\- \"\']+
 STATUS_CODE          {DIGIT}{3}
 HTTP_BODY            [a-zA-Z\.\/\&=;\*\-+_]+
+CHUNK_LENGTH         [1-9a-fA-F][0-9a-fA-F]+
+ZERO                 (0)
 
 
 %%
@@ -206,6 +208,35 @@ HTTP_BODY            [a-zA-Z\.\/\&=;\*\-+_]+
   /*!move to INITIAL state.*/    
   BEGIN(INITIAL);  
   return(CRLF);
+}
+
+<HTTP_BODY_ST>{CHUNK_LENGTH} {
+  /*hex-string without 0x prefix.*/    
+  yylval->chunk_length = strtol(yytext, NULL, 16);
+  BEGIN(HTTP_CHUNKED_BOBY_ST);
+  return(CHUNK_LENGTH);
+}
+
+<HTTP_CHUNKED_BOBY_ST>{CHUNK_LENGTH} {
+  /*hex-string without 0x prefix.*/    
+  yylval->chunk_length = strtol(yytext, NULL, 16);
+  return(CHUNK_LENGTH);
+}
+
+<HTTP_CHUNKED_BOBY_ST>{CRLF} {
+  return(CRLF);
+}
+
+<HTTP_CHUNKED_BOBY_ST>{HTTP_BODY} {
+  /**/    
+  yylval->str = strdup(yytext);
+  return(lSTRING);
+}
+
+ /*HTTP Chunked Body will always end with 0 \r\n*/
+<HTTP_CHUNKED_BOBY_ST>{ZERO} {
+  BEGIN(INITIAL);
+  return('0');
 }
 
 <HTTP_BODY_ST>{HTTP_BODY} {

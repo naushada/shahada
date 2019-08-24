@@ -28,6 +28,7 @@ typedef void *yyscan_t;
   char           *str;
   char           *reason_phrase;
   int            status_code;
+  int            chunk_length;
 }
 
 /*! tokens are looked in lex file for pattern matching*/
@@ -36,6 +37,7 @@ typedef void *yyscan_t;
 %token <pValue>  VALUE
 %token <status_code> STATUS_CODE
 %token <reason_phrase> REASON_PHRASE
+%token <chunk_length> CHUNK_LENGTH
 
 %type <qs_param> qs 
 %type <qs> qstring 
@@ -71,8 +73,12 @@ http_message
   ;
 
 message_body
-  : lSTRING CRLF                             {$$ = __httpInsertBody(NULL, $1);}
-  | message_body lSTRING CRLF                {$$ = __httpInsertBody($1, $2);}
+  : lSTRING CRLF                                      {$$ = __httpInsertBody(NULL, $1);}
+  | message_body lSTRING CRLF                         {$$ = __httpInsertBody($1,   $2);}
+  | CHUNK_LENGTH CRLF lSTRING CRLF                    {$$ = __httpInsertChunkedBody(NULL,   $1, $3);}
+  | CHUNK_LENGTH CRLF lSTRING CRLF '0'                {$$ = __httpInsertChunkedBody(NULL,   $1, $3);}
+  | message_body CHUNK_LENGTH CRLF lSTRING CRLF       {$$ = __httpInsertChunkedBody($1, $2, $4);}
+  | message_body CHUNK_LENGTH CRLF lSTRING CRLF '0'   {$$ = __httpInsertChunkedBody($1, $2, $4);}
   ; 
 
 mime_headers

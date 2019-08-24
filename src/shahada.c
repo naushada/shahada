@@ -43,6 +43,39 @@ http_message_t *__httpReqMessage(http_qs_t *reqLine,
   return(__httpReq);
 }
 
+http_body_t *__httpInsertChunkedBody(http_body_t *head, int length, char *body)
+{
+  http_body_t *tmp = NULL;
+  tmp = (http_body_t *)malloc(sizeof(http_body_t));
+  assert(tmp != NULL);
+  memset((void *)tmp, 0, sizeof(http_body_t));
+
+  tmp->body_len = length;
+  tmp->http_body = (char *)malloc(length);
+  assert(tmp->http_body != NULL);
+  memset((void *)tmp->http_body, 0, length);
+  memcpy((void *)tmp->http_body, body, length);
+  tmp->next = NULL;
+  free(body);
+
+  if(!head)
+  {
+    return(tmp);    
+  }
+
+  http_body_t *tt = head;
+  for(; tt->next; tt = tt->next) ;
+
+  tt->next = tmp;
+  return(head);
+}
+
+/*
+ * @brief 
+ * @param head 
+ * @param body 
+ * @return 
+ * */
 http_body_t *__httpInsertBody(http_body_t *head, char *body)
 {
   http_body_t *tmp = NULL;

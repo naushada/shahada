@@ -79,6 +79,42 @@ char *__testHttpRspWithBody(char *body)
   return(strdup(buff));
 }
 
+char *__testHttpMultipleChunkedRsp(char *body)
+{
+  char buff[2048] = "HTTP/1.1 200 OK\r\n"
+                    "Host: 10.10.10.1\r\n"
+                    "Content-Type: json; txt/5.0\r\n"
+                    "User-Agent: CERN-LineMode/2.15 libwww/2.17b3\r\n"
+                    "Server: Apache/0.8.4\r\n"
+                    "Accept: text/*, text/html, text/html;level=1, */*\r\n"
+                    "\r\n\r\n"
+                    "1E\r\n"
+                    "a=b&c=d&x=zzzzzzyyyyzzzyyyzzyy\r\n"
+                    "1E\r\n"
+                    "a=b&c=d&x=zzzzzzyyyyzzzyyyzzyy\r\n"
+                    "0\r\n";
+
+  return(strdup(buff));
+}
+
+
+char *__testHttpChunkedRsp(char *body)
+{
+  char buff[2048] = "HTTP/1.1 200 OK\r\n"
+                    "Host: 10.10.10.1\r\n"
+                    "Content-Type: json; txt/5.0\r\n"
+                    "User-Agent: CERN-LineMode/2.15 libwww/2.17b3\r\n"
+                    "Server: Apache/0.8.4\r\n"
+                    "Accept: text/*, text/html, text/html;level=1, */*\r\n"
+                    "\r\n\r\n"
+                    "1E\r\n"
+                    "a=b&c=d&x=zzzzzzyyyyzzzyyyzzyy\r\n"
+                    "0\r\n";
+
+  return(strdup(buff));
+}
+
+
 char *__testHttpReqWithBody(char *body)
 {
   char buff[2048] = "POST /abc.html HTTP/1.1\r\n"
@@ -102,7 +138,9 @@ int __getInput(void)
                   "4.......__testHttpReqWithQs \n"
                   "5.......__testHttpRspWithBody \n"
                   "6.......__testHttpReqWithBody \n"
-                  "7.......End \n");
+                  "7.......__testHttpChunkedRsp \n"
+                  "8.......__testHttpMultipleChunkedRsp \n"
+                  "9......End \n");
   return(getchar());
 
 }

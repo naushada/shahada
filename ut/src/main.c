@@ -35,6 +35,12 @@ int main(int argc, char **argv)
       case 6:
         __pBuff = __testHttpReqWithBody("");
         break;
+      case 7:
+        __pBuff = __testHttpChunkedRsp("");
+        break;
+      case 8:
+        __pBuff = __testHttpMultipleChunkedRsp("");
+        break;
       default:
         return(0);
     }
@@ -45,7 +51,6 @@ int main(int argc, char **argv)
     char *fValue = shahadaGetFieldValue("Content-Length", pMsg);
     fprintf(stderr, "Value of Field is %s\n", fValue);
     free(fValue);
-    char *tt = NULL;
 
     //fprintf(stderr, "resource is %s\n", shahadaGetUri(pMsg));
     fprintf(stderr, "protocol is %d\n", shahadaGetProtocol(pMsg));
