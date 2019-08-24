@@ -9,150 +9,142 @@
 
 typedef enum
 {
-  OPTIONS,
-  GET,
-  HEAD,
-  POST,
-  PUT,
-  DELETE,
-  TRACE,
-  CONNECT,
+  __OPTIONS,
+  __GET,
+  __HEAD,
+  __POST,
+  __PUT,
+  __DELETE,
+  __TRACE,
+  __CONNECT,
 
-}http_method_t;
+}__http_method_t;
 
 typedef enum
 {
-  HTTP1dot0 = 1,
-  HTTP1dot1,
-  HTTP2dot0
-}http_version_t;
+  __HTTP1dot0 = 1,
+  __HTTP1dot1,
+  __HTTP2dot0
+}__http_version_t;
 
 typedef struct
 {
-  http_version_t protocol;
-  int status_code;
-  char *reasonPhrase;
+  __http_version_t __protocol;
+  int __statusCode;
+  char *__reasonPhrase;
 
-}http_status_t;
+}__http_status_t;
 
 struct __http_method_t 
 {
-  http_method_t httpMethod;
-  char *pHttpMethodStr;
-  unsigned char strLen;
+  __http_method_t __httpMethod;
+  char *__pHttpMethodStr;
+  char __strLen;
 };
 
 struct __http_version_t
 {
-  http_version_t httpVersion;
-  char *pVersionStr;
-  unsigned char strLen;
+  __http_version_t __httpVersion;
+  char *__pVersionStr;
+  char __strLen;
 };
 
-typedef struct http_header 
+typedef struct __http_header 
 {
-  char *field;
-  char *value;
-}http_header_t;
+  char *__field;
+  char *__value;
+}__http_header_t;
 
-struct http_headers
+struct __http_headers
 {
-  http_header_t *header;  
-  struct http_headers *next;
+  __http_header_t *__header;  
+  struct __http_headers *__next;
 };
 
-
-struct qs_param
+struct __qs_param
 {
-  char *name;
-  char *value;
-  struct qs_param *next;
+  char *__name;
+  char *__value;
+  struct __qs_param *__next;
 };
 
-typedef struct qs_param qs_param_t;
+typedef struct __qs_param __qs_param_t;
 
-struct qs_param_tt
+struct __qs_param_tt
 {
-  char *resource_name;
-  qs_param_t *qsParam;
+  char *__resourceName;
+  __qs_param_t *__qsParam;
 };
 
-typedef struct qs_param_tt qs_param_ttt;
+typedef struct __qs_param_tt __qs_param_ttt;
 
-struct http_qs
+struct __http_qs
 {
-  http_method_t method;
-  http_version_t version;
-  qs_param_ttt *qs_param;
+  __http_method_t __method;
+  __http_version_t __version;
+  __qs_param_ttt *__qsParam;
   
 };
 
-struct http_body
+struct __http_body
 {
-  int  body_len;								
-  char *http_body;
-  struct http_body *next;		
+  int  __bodyLen;								
+  char *__httpBody;
+  struct __http_body *__next;		
 };
 
-typedef struct http_qs http_qs_t;
-typedef struct http_headers http_headers_t;
-typedef struct http_body http_body_t;
+typedef struct __http_qs __http_qs_t;
+typedef struct __http_headers __http_headers_t;
+typedef struct __http_body __http_body_t;
 
-struct http_req
+struct __http_req
 {
-  http_qs_t      *http_req;
-  http_status_t  *status_line;
-  http_headers_t *http_headers;
-  http_body_t    *http_body;
-
+  __http_qs_t      *__httpReq;
+  __http_status_t  *__statusLine;
+  __http_headers_t *__httpHeaders;
+  __http_body_t    *__httpBody;
 };
 
-typedef struct http_req http_message_t;
+typedef struct __http_req __http_message_t;
 
-qs_param_ttt *__http_process_qs(char *pResource, qs_param_t *pQs);
+__qs_param_ttt *__http_process_qs(char *pResource, __qs_param_t *pQs);
 
-int __http_process_default_uri(void);
-int __http_process_options(void);
+__http_qs_t *__httpRequestLine(char *pHttpMethod, 
+                               __qs_param_ttt *pUri, 
+                               char *pHttpVersion);
 
+__http_header_t *__httpNewMimeHeader(char *pMimeFieldName, 
+                                     char *pMimeFieldValue);
 
-http_message_t *http_init(void);
+void __httpDisplay(__http_message_t *pHttpMessage);
 
-http_qs_t *__httpRequestLine(char *pHttpMethod, 
-                             qs_param_ttt *pUri, 
-                             char *pHttpVersion);
+__http_headers_t *__httpAddMimeHeader(__http_headers_t *headers, 
+                                      __http_header_t *newNode);
 
-http_header_t *__httpNewMimeHeader(char *pMimeFieldName, 
-                                   char *pMimeFieldValue);
+__http_message_t *__httpReqMessage(__http_qs_t *reqLine, 
+                                   __http_headers_t *header, 
+                                   __http_body_t *body);
 
-void __httpDisplay(http_message_t *pHttpMessage);
+__http_message_t *__httpRspMessage(__http_status_t *statusLine,
+                                   __http_headers_t *header,
+                                   __http_body_t *body);
 
-http_headers_t *__httpAddMimeHeader(http_headers_t *headers, 
-                                    http_header_t *newNode);
+__http_status_t *__httpStatusLine(char *pHttpVersion, 
+                                  int statusCode, 
+                                  char *pReasonPhrase);
 
-http_message_t *__httpReqMessage(http_qs_t *reqLine, 
-                                 http_headers_t *header, 
-                                 http_body_t *body);
+__http_headers_t *__httpInsertMimeHeader(__http_headers_t *headers, 
+                                         char *field, 
+                                         char *value);
 
-http_message_t *__httpRspMessage(http_status_t *statusLine,
-                                 http_headers_t *header,
-                                 http_body_t *body);
+__http_body_t *__httpInsertBody(__http_body_t *head, char *body);
+__http_body_t *__httpInsertChunkedBody(__http_body_t *head, 
+                                       int length, 
+                                       char *body);
 
-http_status_t *__httpStatusLine(char *pHttpVersion, 
-                                int statusCode, 
-                                char *pReasonPhrase);
-
-http_headers_t *__httpInsertMimeHeader(http_headers_t *headers, 
-                                       char *field, 
-                                       char *value);
-
-http_body_t *__httpInsertBody(http_body_t *head, char *body);
-http_body_t *__httpInsertChunkedBody(http_body_t *head, 
-                                     int length, 
-                                     char *body);
-
-qs_param_t *__httpInsertQsParam(qs_param_t *qsParam, 
-                                char *param, 
-                                char *value);
+__qs_param_t *__httpInsertQsParam(__qs_param_t *qsParam, 
+                                  char *param, 
+                                  char *value);
 
 void *shahadaHttpParserStart(char *pIn);
 void shahadaHttpParserEnd(void *handle);

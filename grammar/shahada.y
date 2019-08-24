@@ -6,7 +6,7 @@
 #include "shahada.yy.h"
 
 int yyerror(yyscan_t yyscanner, const char *s);
-http_message_t *__PMessage;
+__http_message_t *__PMessage;
 %}
 
 /*! Copies this piece of code verbatim in header file*/
@@ -16,36 +16,36 @@ typedef void *yyscan_t;
 }
 
 %union {
-  http_message_t *message;
-  http_qs_t      *request_line;
-  http_status_t  *status_line;
-  http_headers_t *http_headers;
-  http_body_t    *http_body;
-  qs_param_ttt   *qs_param;
-  qs_param_t     *qs;
-  char           *pField;
-  char           *pValue;
-  char           *str;
-  char           *reason_phrase;
-  int            status_code;
-  int            chunk_length;
+  __http_message_t *__message;
+  __http_qs_t      *__request_line;
+  __http_status_t  *__status_line;
+  __http_headers_t *__http_headers;
+  __http_body_t    *__http_body;
+  __qs_param_ttt   *__qs_param;
+  __qs_param_t     *__qs;
+  char           *__pField;
+  char           *__pValue;
+  char           *__str;
+  char           *__reason_phrase;
+  int            __status_code;
+  int            __chunk_length;
 }
 
 /*! tokens are looked in lex file for pattern matching*/
-%token <str> lSTRING HTTP_METHOD HTTP_VERSION RESOURCE CRLF SPACE
-%token <pField>  PARAM
-%token <pValue>  VALUE
-%token <status_code> STATUS_CODE
-%token <reason_phrase> REASON_PHRASE
-%token <chunk_length> CHUNK_LENGTH
+%token <__str> lSTRING HTTP_METHOD HTTP_VERSION RESOURCE CRLF SPACE
+%token <__pField>  PARAM
+%token <__pValue>  VALUE
+%token <__status_code> STATUS_CODE
+%token <__reason_phrase> REASON_PHRASE
+%token <__chunk_length> CHUNK_LENGTH
 
-%type <qs_param> qs 
-%type <qs> qstring 
-%type <http_headers> mime_headers 
-%type <message> http_message
-%type <request_line> request_line 
-%type <status_line> status_line 
-%type <http_body> message_body 
+%type <__qs_param> qs 
+%type <__qs> qstring 
+%type <__http_headers> mime_headers 
+%type <__message> http_message
+%type <__request_line> request_line 
+%type <__status_line> status_line 
+%type <__http_body> message_body 
 
 %define parse.error verbose
 %define parse.lac full

@@ -1,6 +1,7 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "shahada.tab.h"								
 #include "shahada.h"
 
@@ -69,7 +70,7 @@ ZERO                 (0)
 
  /*Initial state of LEX*/
 <INITIAL>{METHOD} {
-  yylval->str = strdup(yytext);
+  yylval->__str = strdup(yytext);
   /*This is going to be HTTP REQuest.*/
   BEGIN(HTTP_REQ_ST);
   return(HTTP_METHOD);
@@ -77,7 +78,7 @@ ZERO                 (0)
 
  /*FSM for Response Status Line*/
 <INITIAL>{PROTOCOL} {
-  yylval->str = strdup(yytext);
+  yylval->__str = strdup(yytext);
   /*This is going to be HTT RESponse.*/
   BEGIN(HTTP_RSP_ST);
   return(HTTP_VERSION);
@@ -90,7 +91,7 @@ ZERO                 (0)
 
  /*URI can be default URI meaning / or with Query String.*/
 <HTTP_REQ_ST>{URI} {
-  yylval->str = strdup(yytext);
+  yylval->__str = strdup(yytext);
   BEGIN(QS_PARAM_ST);
   return(RESOURCE);
 }
@@ -106,7 +107,7 @@ ZERO                 (0)
 }
 
 <QS_PARAM_ST>{QS_PARAM} {
-  yylval->pField = strdup(yytext);
+  yylval->__pField = strdup(yytext);
   return(PARAM);
 }
 
@@ -116,7 +117,7 @@ ZERO                 (0)
 }
 
 <QS_VALUE_ST>{QS_VALUE} {
-  yylval->pValue = strdup(yytext);
+  yylval->__pValue = strdup(yytext);
   return(VALUE);
 }
 
@@ -131,7 +132,7 @@ ZERO                 (0)
 }
 
 <HTTP_REQ_ST>{PROTOCOL} {
-  yylval->str = strdup(yytext);
+  yylval->__str = strdup(yytext);
   return(HTTP_VERSION);
 }
 
@@ -141,7 +142,7 @@ ZERO                 (0)
 }
 
 <HTTP_RSP_ST>{STATUS_CODE} {
-  yylval->status_code = atoi(yytext);
+  yylval->__status_code = atoi(yytext);
   return(STATUS_CODE);
 }
 
@@ -151,7 +152,7 @@ ZERO                 (0)
 
  /*Reason-Phrase of Http-Response.*/
 <HTTP_RSP_ST>{STATUS_STR} {
-  yylval->reason_phrase = strdup(yytext);
+  yylval->__reason_phrase = strdup(yytext);
   return(REASON_PHRASE);
 }
 
@@ -173,7 +174,7 @@ ZERO                 (0)
 }
 
 <MIME_PARAM_ST>{MIME_PARAM} {
-  yylval->pField = strdup(yytext);
+  yylval->__pField = strdup(yytext);
   return(PARAM);
 }
 
@@ -183,7 +184,7 @@ ZERO                 (0)
 }
 
 <MIME_VALUE_ST>{MIME_VALUE} {
-  yylval->pValue = strdup(yytext);
+  yylval->__pValue = strdup(yytext);
   return(VALUE);
 }
 
@@ -212,14 +213,14 @@ ZERO                 (0)
 
 <HTTP_BODY_ST>{CHUNK_LENGTH} {
   /*hex-string without 0x prefix.*/    
-  yylval->chunk_length = strtol(yytext, NULL, 16);
+  yylval->__chunk_length = strtol(yytext, NULL, 16);
   BEGIN(HTTP_CHUNKED_BOBY_ST);
   return(CHUNK_LENGTH);
 }
 
 <HTTP_CHUNKED_BOBY_ST>{CHUNK_LENGTH} {
   /*hex-string without 0x prefix.*/    
-  yylval->chunk_length = strtol(yytext, NULL, 16);
+  yylval->__chunk_length = strtol(yytext, NULL, 16);
   return(CHUNK_LENGTH);
 }
 
@@ -228,8 +229,11 @@ ZERO                 (0)
 }
 
 <HTTP_CHUNKED_BOBY_ST>{HTTP_BODY} {
-  /**/    
-  yylval->str = strdup(yytext);
+  /*HTTP body may or may not be terminated with '\0'*/    
+  yylval->__str = malloc(yyleng + 1);
+  assert(yylval->__str != NULL);
+  memset(yylval->__str, 0, yyleng + 1);
+  memcpy(yylval->__str, yytext, yyleng + 1);
   return(lSTRING);
 }
 
@@ -240,7 +244,10 @@ ZERO                 (0)
 }
 
 <HTTP_BODY_ST>{HTTP_BODY} {
-  yylval->str = strdup(yytext);
+  yylval->__str = malloc(yyleng + 1);
+  assert(yylval->__str != NULL);
+  memset(yylval->__str, 0, yyleng + 1);
+  memcpy(yylval->__str, yytext, yyleng + 1);
   return(lSTRING);
 }
 
