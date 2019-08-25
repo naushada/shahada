@@ -10,6 +10,6 @@ char *__testHttpReqWithBody(char *body);
 int __getInput(void);
 char *__testHttpChunkedRsp(char *body);
 char *__testHttpMultipleChunkedRsp(char *body);
-
+char *__testHttpChunkedWithExtRsp(char *);
 
 #endif /*__TEST_H__*/

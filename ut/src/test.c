@@ -125,7 +125,27 @@ char *__testHttpReqWithBody(char *body)
                     "Server: Apache/0.8.4\r\n"
                     "Accept: text/*, text/html, text/html;level=1, */*\r\n"
                     "\r\n\r\n"
-                    "a=b&c=d\r\n";
+                    "a=b&c=d Hello Exp !\r\n";
+
+  return(strdup(buff));
+}
+
+char *__testHttpChunkedWithExtRsp(char *body)
+{
+  char buff[] = "HTTP/1.1 200 OK\r\n"
+                "Server: test\r\n"
+                "Trailer: Expires, Content-MD5\r\n"
+                "Transfer-Encoding: chunked\r\n"
+                "\r\n"
+                "5\r\n"
+                "First\r\n"
+                "d;quality=1.0\r\n"
+                "Hello, world!\r\n"
+                "e;file=abc.txt;quality=0.7\r\n"
+                "The Next Chunk\r\n"
+                "8;last\r\n"
+                "Last one\r\n"
+                "0\r\n";
 
   return(strdup(buff));
 }
@@ -140,7 +160,8 @@ int __getInput(void)
                   "6.......__testHttpReqWithBody \n"
                   "7.......__testHttpChunkedRsp \n"
                   "8.......__testHttpMultipleChunkedRsp \n"
-                  "9......End \n");
+                  "9.......__testHttpChunkedWithExtRsp \n"
+                  "10......End \n");
   return(getchar());
 
 }

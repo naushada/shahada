@@ -32,7 +32,7 @@ typedef void *yyscan_t;
 }
 
 /*! tokens are looked in lex file for pattern matching*/
-%token <__str> lSTRING HTTP_METHOD HTTP_VERSION RESOURCE CRLF SPACE
+%token <__str> lSTRING HTTP_METHOD HTTP_VERSION RESOURCE CRLF SPACE CHUNK_EXT
 %token <__pField>  PARAM
 %token <__pValue>  VALUE
 %token <__status_code> STATUS_CODE
@@ -75,10 +75,21 @@ http_message
 message_body
   : lSTRING CRLF                                      {$$ = __httpInsertBody(NULL, $1);}
   | message_body lSTRING CRLF                         {$$ = __httpInsertBody($1,   $2);}
+   /*Chunked Message Body.*/
   | CHUNK_LENGTH CRLF lSTRING CRLF                    {$$ = __httpInsertChunkedBody(NULL,   $1, $3);}
   | CHUNK_LENGTH CRLF lSTRING CRLF '0'                {$$ = __httpInsertChunkedBody(NULL,   $1, $3);}
   | message_body CHUNK_LENGTH CRLF lSTRING CRLF       {$$ = __httpInsertChunkedBody($1, $2, $4);}
   | message_body CHUNK_LENGTH CRLF lSTRING CRLF '0'   {$$ = __httpInsertChunkedBody($1, $2, $4);}
+   /*Chunked followed by chunk-extension.*/
+  | CHUNK_LENGTH CHUNK_EXT PARAM CRLF lSTRING CRLF
+  | CHUNK_LENGTH CHUNK_EXT PARAM CRLF lSTRING CRLF '0'
+  | message_body CHUNK_LENGTH CHUNK_EXT PARAM CRLF lSTRING CRLF
+  | message_body CHUNK_LENGTH CHUNK_EXT PARAM CRLF lSTRING CRLF '0'
+   /*Chunked with optional chunked-value.*/
+  | CHUNK_LENGTH CHUNK_EXT PARAM '=' VALUE CRLF lSTRING CRLF
+  | CHUNK_LENGTH CHUNK_EXT PARAM '=' VALUE CRLF lSTRING CRLF '0'
+  | message_body CHUNK_LENGTH CHUNK_EXT PARAM '=' VALUE CRLF lSTRING CRLF
+  | message_body CHUNK_LENGTH CHUNK_EXT PARAM '=' VALUE CRLF lSTRING CRLF '0'
   ; 
 
 mime_headers

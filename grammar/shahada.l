@@ -29,6 +29,7 @@ int yywrap(yyscan_t yyscanner)
 %x MIME_PARAM_ST MIME_VALUE_ST 
 %x HTTP_BODY_ST REASON_PHRASE_ST HTTP_CHUNKED_BOBY_ST
 %x HTTP_REQ_ST HTTP_RSP_ST QS_PARAM_ST QS_VALUE_ST
+%x HTTP_EXT_CHUNK_NAME_ST HTTP_EXT_CHUNK_VALUE_ST
 
 DIGIT                [0-9]
 INTEGER              -?(0|[1-9]{DIGIT}*)
@@ -61,9 +62,13 @@ QS_VALUE             {ALPHANUM}+
  /*Reason Phrase*/
 STATUS_STR           [a-zA-Z\- \"\']+
 STATUS_CODE          {DIGIT}{3}
-HTTP_BODY            [a-zA-Z\.\/\&=;\*\-+_]+
+ /*The Printable ASCII Character.*/
+HTTP_BODY            [\x20-\x7F]+
 CHUNK_LENGTH         [1-9a-fA-F][0-9a-fA-F]+
 ZERO                 (0)
+CHUNK_EXT            (;)
+CHUNK_EXT_NAME       [1-9a-zA-Z\.\-\"\'\!\#\$\%\&\*\^+_\`\~]+
+CHUNK_EXT_VALUE      {CHUNK_EXT_NAME}+ 
 
 
 %%
@@ -233,7 +238,7 @@ ZERO                 (0)
   yylval->__str = malloc(yyleng + 1);
   assert(yylval->__str != NULL);
   memset(yylval->__str, 0, yyleng + 1);
-  memcpy(yylval->__str, yytext, yyleng + 1);
+  memcpy(yylval->__str, yytext, yyleng);
   return(lSTRING);
 }
 
@@ -243,11 +248,48 @@ ZERO                 (0)
   return('0');
 }
 
+<HTTP_CHUNKED_BOBY_ST>';' {
+  BEGIN(HTTP_EXT_CHUNK_NAME_ST);
+  return(CHUNK_EXT);
+}
+
+<HTTP_EXT_CHUNK_NAME_ST>{CHUNK_EXT_NAME} {
+  yylval->__pField = malloc(yyleng + 1);
+  assert(yylval->__pField != NULL);
+  memset(yylval->__pField, 0, yyleng + 1);
+  memcpy(yylval->__pField, yytext, yyleng);
+  return(PARAM);
+}
+
+<HTTP_EXT_CHUNK_NAME_ST>{CRLF} {
+  BEGIN(HTTP_CHUNKED_BOBY_ST);  
+  return(CRLF);
+}
+
+<HTTP_EXT_CHUNK_NAME_ST>{ZERO} {
+  BEGIN(INITIAL);
+  return('0');
+}
+
+<HTTP_CHUNKED_BOBY_ST>'=' {
+  BEGIN(HTTP_EXT_CHUNK_VALUE_ST);
+  return('=');
+}
+
+<HTTP_EXT_CHUNK_VALUE_ST>{CHUNK_EXT_VALUE} {
+  yylval->__pValue = malloc(yyleng + 1);
+  assert(yylval->__pValue != NULL);
+  memset(yylval->__pValue, 0, yyleng + 1);
+  memcpy(yylval->__pValue, yytext, yyleng);
+  BEGIN(HTTP_CHUNKED_BOBY_ST);
+  return(VALUE);
+}
+
 <HTTP_BODY_ST>{HTTP_BODY} {
   yylval->__str = malloc(yyleng + 1);
   assert(yylval->__str != NULL);
   memset(yylval->__str, 0, yyleng + 1);
-  memcpy(yylval->__str, yytext, yyleng + 1);
+  memcpy(yylval->__str, yytext, yyleng);
   return(lSTRING);
 }
 

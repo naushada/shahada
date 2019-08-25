@@ -41,6 +41,9 @@ int main(int argc, char **argv)
       case 8:
         __pBuff = __testHttpMultipleChunkedRsp("");
         break;
+      case 9:
+        __pBuff = __testHttpChunkedWithExtRsp("");
+        break;
       default:
         return(0);
     }
