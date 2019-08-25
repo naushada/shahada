@@ -222,19 +222,22 @@ __http_qs_t *__httpRequestLine(char *pHttpMethod,
   {
     if(!pHttpMethod)
     {
-      /*Debug log to be added.*/  
+      /*Debug log to be added.*/
+      DEBUG_PRINTF("",0, "Pointer to the Http-Method is NULL");
       break;    
     }
 
     if(!pUri)
     {
       /*Debug log to be added.*/  
+      DEBUG_PRINTF("",0, "Pointer to the Http-Uri is NULL");
       break;    
     }
 
     if(!pHttpVersion)
     {
       /*Debug log to be added.*/  
+      DEBUG_PRINTF("",0, "Pointer to the Http-Version is NULL");
       break;
     }
 
@@ -355,6 +358,7 @@ void __httpDisplay(__http_message_t *pHttpMessage)
     if(!pHttpMessage)
     {
       /*Add the debug log.*/
+      DEBUG_PRINTF("", 0, "Pointer to Http-Message is NULL");
       break;
     }
   
