@@ -1,14 +1,15 @@
 CC        = gcc
 AR        = ar
 FLAGS     = -g -Wall
-AR_FLAGS  = -rc
-INC       = -I./ -I./inc
+AR_FLAGS  = rvs
+INC       = -I. -Iinc
 LINK_LIB  = 
 LOG_LIB   = lib/liblog.a
-OBJS      = obj/log.o
+OBJS      = obj/llog.o
 
 #/*make lib - will be used to build the static library.*/
-lib: build $(LOG_LIB)
+lib : build $(LOG_LIB)
+all : lib
 
 .PHONY: all lib
 
@@ -19,7 +20,7 @@ build:
 
 # /*Creating static library i.e. libshahada.a */
 $(LOG_LIB): $(OBJS)
-	$(AR) $(AR_FLAGS) -o $@  $^  $(LINK_LIB)
+	$(AR) $(AR_FLAGS) $@ $^ $(LINK_LIB)
 
 # /* Creating Object files in obj directory from source files */
 
@@ -28,7 +29,7 @@ obj/%.o: src/%.c
 
 # /* Creating Object files from source files kept in parser directory. */
 
-obj/log.o         : inc/log.h
+obj/llog.o         : inc/llog.h
 
 .PHONY: clean
 

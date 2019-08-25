@@ -1,7 +1,12 @@
-#ifdef __LOG_C__
+#ifndef __LOG_C__
 #define __LOG_C__
 
-#include "log.h"
+#include <stdio.h>
+#include <syslog.h>
+#include <string.h>
+#include <libgen.h>
+
+#include "llog.h"
 
 int syslogLevels[] = {
     LOG_DEBUG,    
@@ -45,6 +50,5 @@ void __logRaw(const char *fileName,
 
   syslog(syslogLevels[LOG_DEBUG], "%s\n", temp1);
 }
-
 
 #endif /*__LOG_C__*/

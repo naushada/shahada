@@ -4,25 +4,27 @@ AR          = ar
 YACC        = bison
 LEX         = flex
 FLAGS       = -g -Wall
-AR_FLAGS    = -rsv
+AR_FLAGS    = rvs 
 INC         = -I. -Iinc -Iparser -Iut/inc -Ilogging/inc
 LINK_LIB    = -llog
-LDFLAGS     = logging/lib
+LDFLAGS     = -L$(PWD)/logging/lib
 SHAHADA_BIN = bin/shahada
 SHAHADA_LIB = lib/libshahada.a
-OBJS        = logging/obj/log.o obj/main.o obj/shahada.o obj/shahada.tab.o obj/shahada.yy.o obj/test.o
+BIN_OBJS    = obj/main.o obj/shahada.o obj/shahada.tab.o obj/shahada.yy.o obj/test.o
+
+LIB_OBJS    = obj/shahada.o obj/shahada.tab.o obj/shahada.yy.o
 GENERAT_SRC = parser/shahada.tab.c parser/shahada.tab.h parser/shahada.yy.c parser/shahada.yy.h
 
 #/*Make all will be used to build everything- lib, bin.*/
-all: build loglib parser/shahada.yy.c parser/shahada.tab.c $(SHAHADA_BIN) $(SHAHADA_LIB)
+all: build log-lib parser/shahada.yy.c parser/shahada.tab.c $(SHAHADA_BIN) $(SHAHADA_LIB)
 
 #/*make lib - will be used to build the static library.*/
-lib: build loglib parser/shahada.yy.c parser/shahada.tab.c $(SHAHADA_LIB)
+lib: build log-lib parser/shahada.yy.c parser/shahada.tab.c $(SHAHADA_LIB)
 
 #/*make bin will be used to build executable.*/
-bin: build loglib parser/shahada.yy.c parser/shahada.tab.c $(SHAHADA_BIN)
+bin: build log-lib parser/shahada.yy.c parser/shahada.tab.c $(SHAHADA_BIN)
 
-.PHONY: all lib bin
+.PHONY: all log-lib lib bin
 
 # /* Creates the directory if don't exists */
 build:
@@ -31,7 +33,7 @@ build:
 	@mkdir -p bin
 	@mkdir -p lib
 
-loglib:
+log-lib:
 	$(MAKE) -C logging
 
 parser/shahada.yy.c: grammar/shahada.l
@@ -41,11 +43,11 @@ parser/shahada.tab.c: grammar/shahada.y
 	$(YACC) --debug --verbose -d -b shahada $^ -o $@
 
 # /*Creating static library i.e. libshahada.a */
-$(SHAHADA_LIB): $(OBJS)
+$(SHAHADA_LIB): $(LIB_OBJS)
 	$(AR) $(AR_FLAGS) -o $@ $^
 
-$(SHAHADA_BIN): $(OBJS)
-	$(CC) $(FLAGS) -o $@ $^ -L$(PWD)/$(LDFLAGS) $(LINK_LIB)
+$(SHAHADA_BIN): $(BIN_OBJS)
+	$(CC) $(FLAGS) -o $@ $^ $(LDFLAGS) $(LINK_LIB)
 
 # /* Creating Object files in obj directory from source files */
 
