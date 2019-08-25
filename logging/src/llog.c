@@ -18,11 +18,6 @@ int syslogLevels[] = {
     LOG_INFO     
 };
 
-void disp(void)
-{
-  fprintf(stderr,"testing\n");
-}
-
 void __logRaw(const char *fileName, 
               int lineNumber, 
               const char * fmt, ...)

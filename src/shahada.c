@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <assert.h>
-#include "llog.h"
 #include "shahada.tab.h"
 #include "shahada.yy.h"
 #include "shahada.h"
+#include "llog.h"
 
 /*
  * @brief This function is used to create the data structure for 
@@ -150,13 +150,13 @@ __http_status_t *__httpStatusLine(char *pHttpVersion,
     {
       /*Debug log to be added.*/ 
       DEBUG_LOG("Pointer to HTTP-Protocol is NULL");
-      disp();
       break;    
     }
 
     if(!pReasonPhrase)
     {
       /*Debug log to be added.*/  
+      DEBUG_LOG("Pointer to HTTP-resaon-phrase is NULL");
       break;    
     }
 
@@ -361,14 +361,14 @@ void __httpDisplay(__http_message_t *pHttpMessage)
     /*Displaying http-request*/
     if(pHttpMessage->__httpReq)
     {
-      fprintf(stderr, "Method %d Protocol Version %d ", 
+      DEBUG_LOG("Method %d Protocol Version %d ", 
               pHttpMessage->__httpReq->__method,
               pHttpMessage->__httpReq->__version);
 
       /*Query String if any.*/
       if(pHttpMessage->__httpReq->__qsParam)
       {
-        fprintf(stderr, "URI is %s ", 
+        DEBUG_LOG("URI is %s ", 
                 pHttpMessage->__httpReq->__qsParam->__resourceName);
         __qs_param_t *tmp = pHttpMessage->__httpReq->__qsParam->__qsParam;
 
@@ -386,12 +386,12 @@ void __httpDisplay(__http_message_t *pHttpMessage)
     /*Displaying status line.*/
     if(pHttpMessage->__statusLine)
     {
-      fprintf(stderr, "Status code %d Protocol version %d ", 
+      DEBUG_LOG("Status code %d Protocol version %d ", 
               pHttpMessage->__statusLine->__statusCode,
               pHttpMessage->__statusLine->__protocol);
       if(pHttpMessage->__statusLine->__reasonPhrase)
       {
-        fprintf(stderr, "Reason Phrase %s \n", pHttpMessage->__statusLine->__reasonPhrase);
+        DEBUG_LOG("Reason Phrase %s \n", pHttpMessage->__statusLine->__reasonPhrase);
       }
     }
 
@@ -399,24 +399,24 @@ void __httpDisplay(__http_message_t *pHttpMessage)
     __http_headers_t *tmpHeader = pHttpMessage->__httpHeaders;
     while(tmpHeader)
     {
-      fprintf(stderr, "Field Name: %s Field Value: %s\n", 
+      DEBUG_LOG("Field Name: %s Field Value: %s\n", 
               tmpHeader->__header->__field, 
               tmpHeader->__header->__value);
 
       tmpHeader = tmpHeader->__next;
     }
-    fprintf(stderr, "\n");
+    DEBUG_LOG("\n");
 
     /*Displaying Http-Body*/
     if(pHttpMessage->__httpBody && pHttpMessage->__httpBody->__httpBody)
     {
-      fprintf(stderr, "Http Body %s ",
+      DEBUG_LOG("Http Body %s ",
               pHttpMessage->__httpBody->__httpBody);
 
       __http_body_t *tmp = pHttpMessage->__httpBody->__next;
       while(tmp)
       {
-        fprintf(stderr, "Http Body %s ",
+        DEBUG_LOG("Http Body %s ",
                 tmp->__httpBody);
         tmp = tmp->__next; 
       }
