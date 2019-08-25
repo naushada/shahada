@@ -1,24 +1,26 @@
-CC = gcc
-AR = ar
-YACC = bison
-LEX = flex
-FLAGS =  -g -Wall
-AR_FLAGS =  -rc
-INC = -I./ -I./inc -I./parser -I./ut/inc
-LINK_LIB = 
+PWD         = $(shell pwd)
+CC          = gcc
+AR          = ar
+YACC        = bison
+LEX         = flex
+FLAGS       = -g -Wall
+AR_FLAGS    = -rsv
+INC         = -I. -Iinc -Iparser -Iut/inc -Ilogging/inc
+LINK_LIB    = -llog
+LDFLAGS     = logging/lib
 SHAHADA_BIN = bin/shahada
 SHAHADA_LIB = lib/libshahada.a
-OBJS        = obj/main.o obj/shahada.o obj/shahada.tab.o obj/shahada.yy.o obj/test.o
+OBJS        = logging/obj/log.o obj/main.o obj/shahada.o obj/shahada.tab.o obj/shahada.yy.o obj/test.o
 GENERAT_SRC = parser/shahada.tab.c parser/shahada.tab.h parser/shahada.yy.c parser/shahada.yy.h
 
 #/*Make all will be used to build everything- lib, bin.*/
-all: build parser/shahada.yy.c parser/shahada.tab.c $(SHAHADA_BIN) $(SHAHADA_LIB)
+all: build loglib parser/shahada.yy.c parser/shahada.tab.c $(SHAHADA_BIN) $(SHAHADA_LIB)
 
 #/*make lib - will be used to build the static library.*/
-lib: build parser/shahada.yy.c parser/shahada.tab.c $(SHAHADA_LIB)
+lib: build loglib parser/shahada.yy.c parser/shahada.tab.c $(SHAHADA_LIB)
 
 #/*make bin will be used to build executable.*/
-bin: build parser/shahada.yy.c parser/shahada.tab.c $(SHAHADA_BIN)
+bin: build loglib parser/shahada.yy.c parser/shahada.tab.c $(SHAHADA_BIN)
 
 .PHONY: all lib bin
 
@@ -29,6 +31,9 @@ build:
 	@mkdir -p bin
 	@mkdir -p lib
 
+loglib:
+	$(MAKE) -C logging
+
 parser/shahada.yy.c: grammar/shahada.l
 	$(LEX) --debug $^
 
@@ -37,10 +42,10 @@ parser/shahada.tab.c: grammar/shahada.y
 
 # /*Creating static library i.e. libshahada.a */
 $(SHAHADA_LIB): $(OBJS)
-	$(AR) $(AR_FLAGS) -o $@  $^  $(LINK_LIB)
+	$(AR) $(AR_FLAGS) -o $@ $^
 
 $(SHAHADA_BIN): $(OBJS)
-	$(CC) $(FLAGS) -o $@  $^  $(LINK_LIB)
+	$(CC) $(FLAGS) -o $@ $^ -L$(PWD)/$(LDFLAGS) $(LINK_LIB)
 
 # /* Creating Object files in obj directory from source files */
 
@@ -64,8 +69,10 @@ obj/shahada.yy.o  : parser/shahada.yy.c parser/shahada.yy.h
 .PHONY: clean
 
 clean:
+	$(MAKE) clean -C logging
 	rm -f $(SHAHADA_BIN) $(OBJS) $(GENERAT_SRC) $(SHAHADA_LIB)
 	@rm -fr parser
 	@rm -fr obj
 	@rm -fr bin
 	@rm -fr lib
+

@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <assert.h>
+#include "log.h"
 #include "shahada.tab.h"
 #include "shahada.yy.h"
 #include "shahada.h"
+
 
 /*
  * @brief This function is used to create the data structure for 
@@ -147,7 +149,9 @@ __http_status_t *__httpStatusLine(char *pHttpVersion,
   {
     if(!pHttpVersion)
     {
-      /*Debug log to be added.*/  
+      /*Debug log to be added.*/ 
+      //DEBUG_LOG("Pointer to HTTP-Protocol is NULL");
+      disp();
       break;    
     }
 
