@@ -95,6 +95,23 @@ __http_body_t *__httpInsertChunkedBody(__http_body_t *head,
 
 /*
  * @brief 
+ * @param 
+ * @param 
+ * @param 
+ * @param 
+ * @param 
+ * @return
+ * */
+__http_body_t *__httpInsertChunkedWithToken(__http_body_t *head, 
+                                            int length, 
+                                            char *param,
+                                            char *value,
+                                            char *body)
+{
+      
+}
+/*
+ * @brief 
  * @param head 
  * @param body 
  * @return 

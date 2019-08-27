@@ -51,7 +51,7 @@ char *__testHtpRsp(void)
 
 char *__testHttpReqWithQs(char *Qs)
 {
-  char buff[2048] = "POST /abc.html?aa=xx&bb=cc HTTP/1.1\r\n"
+  char buff[2048] = "POST /abc.html?aa=xx&bb=cc&xx=a/b/c/d/e HTTP/1.1\r\n"
                     "Host: 10.10.10.1\r\n"
                     "Content-Length: 101\r\n"
                     "Content-Type: json; txt/5.0\r\n"

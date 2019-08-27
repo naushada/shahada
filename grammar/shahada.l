@@ -56,19 +56,21 @@ MIME_PARAM           {ALPHANUM}+
 MIME_VALUE           [a-zA-Z0-9\.\/_\-\'\"; \*=;,+]+ 
 
  /*Query-string parameters of form field-name=field-value*/
+OCTET                [\x20-\x7F]
 QS_PARAM             {ALPHANUM}+
-QS_VALUE             {ALPHANUM}+
+QS_VALUE             [0-9a-zA-Z\/#\.\-_+!=]+
 
  /*Reason Phrase*/
 STATUS_STR           [a-zA-Z\- \"\']+
 STATUS_CODE          {DIGIT}{3}
  /*The Printable ASCII Character.*/
-HTTP_BODY            [\x20-\x7F]+
-CHUNK_LENGTH         [1-9a-fA-F][0-9a-fA-F]+
+ /*HTTP_BODY            {OCTET}+*/
+HTTP_BODY            [0-9a-zA-Z\&\-_+\/ \t,]+
+LENGTH         [1-9a-fA-F][0-9a-fA-F]*
 ZERO                 (0)
-CHUNK_EXT            (;)
-CHUNK_EXT_NAME       [1-9a-zA-Z\.\-\"\'\!\#\$\%\&\*\^+_\`\~]+
-CHUNK_EXT_VALUE      {CHUNK_EXT_NAME}+ 
+SEMI_COLON           (;)
+CHUNK_EXT_NAME       [0-9a-zA-Z\.\-\"\'\!\#\$\%\&\*\^+_\`\~]+
+CHUNK_EXT_VALUE      {CHUNK_EXT_NAME} 
 
 
 %%
@@ -216,53 +218,22 @@ CHUNK_EXT_VALUE      {CHUNK_EXT_NAME}+
   return(CRLF);
 }
 
-<HTTP_BODY_ST>{CHUNK_LENGTH} {
+<HTTP_BODY_ST>{LENGTH} {
   /*hex-string without 0x prefix.*/    
   yylval->__chunk_length = strtol(yytext, NULL, 16);
+  fprintf(stderr, "[Naushad] Chunked Length(HTTP_BODY_ST) is %d\n", yylval->__chunk_length);
   BEGIN(HTTP_CHUNKED_BOBY_ST);
   return(CHUNK_LENGTH);
 }
 
-<HTTP_CHUNKED_BOBY_ST>{CHUNK_LENGTH} {
+<HTTP_CHUNKED_BOBY_ST>{LENGTH} {
   /*hex-string without 0x prefix.*/    
   yylval->__chunk_length = strtol(yytext, NULL, 16);
+  fprintf(stderr, "[Naushad] Chunked Length is %d\n", yylval->__chunk_length);
   return(CHUNK_LENGTH);
 }
 
 <HTTP_CHUNKED_BOBY_ST>{CRLF} {
-  return(CRLF);
-}
-
-<HTTP_CHUNKED_BOBY_ST>{HTTP_BODY} {
-  /*HTTP body may or may not be terminated with '\0'*/    
-  yylval->__str = malloc(yyleng + 1);
-  assert(yylval->__str != NULL);
-  memset(yylval->__str, 0, yyleng + 1);
-  memcpy(yylval->__str, yytext, yyleng);
-  return(lSTRING);
-}
-
- /*HTTP Chunked Body will always end with 0 \r\n*/
-<HTTP_CHUNKED_BOBY_ST>{ZERO} {
-  BEGIN(INITIAL);
-  return('0');
-}
-
-<HTTP_CHUNKED_BOBY_ST>';' {
-  BEGIN(HTTP_EXT_CHUNK_NAME_ST);
-  return(CHUNK_EXT);
-}
-
-<HTTP_EXT_CHUNK_NAME_ST>{CHUNK_EXT_NAME} {
-  yylval->__pField = malloc(yyleng + 1);
-  assert(yylval->__pField != NULL);
-  memset(yylval->__pField, 0, yyleng + 1);
-  memcpy(yylval->__pField, yytext, yyleng);
-  return(PARAM);
-}
-
-<HTTP_EXT_CHUNK_NAME_ST>{CRLF} {
-  BEGIN(HTTP_CHUNKED_BOBY_ST);  
   return(CRLF);
 }
 
@@ -271,10 +242,55 @@ CHUNK_EXT_VALUE      {CHUNK_EXT_NAME}+
   return('0');
 }
 
-<HTTP_CHUNKED_BOBY_ST>'=' {
+ /*HTTP Chunked Body will always end with 0 \r\n*/
+<HTTP_CHUNKED_BOBY_ST>{ZERO} {
+  BEGIN(INITIAL);
+  return('0');
+}
+
+<HTTP_CHUNKED_BOBY_ST>{SEMI_COLON} {
+  fprintf(stderr, "[Naushad]%s:%d ext %s\n", __FILE__, __LINE__, yytext);  
+  BEGIN(HTTP_EXT_CHUNK_NAME_ST);
+  return(CHUNK_EXT);
+}
+
+<HTTP_CHUNKED_BOBY_ST>{EQ} {
   BEGIN(HTTP_EXT_CHUNK_VALUE_ST);
+  fprintf(stderr, "[Naushad] Got the = now\n");
   return('=');
 }
+
+<HTTP_CHUNKED_BOBY_ST>{HTTP_BODY} {
+  /*HTTP body may or may not be terminated with '\0'*/    
+  yylval->__str = malloc(yyleng + 1);
+  assert(yylval->__str != NULL);
+  memset(yylval->__str, 0, yyleng + 1);
+  memcpy(yylval->__str, yytext, yyleng);
+  fprintf(stderr, "[Naushad]%s:%d body is %s\n", __FILE__, __LINE__,yytext);
+  return(lSTRING);
+}
+
+<HTTP_EXT_CHUNK_NAME_ST>{CHUNK_EXT_NAME} {
+  yylval->__pField = malloc(yyleng + 1);
+  assert(yylval->__pField != NULL);
+  memset(yylval->__pField, 0, yyleng + 1);
+  memcpy(yylval->__pField, yytext, yyleng);
+  fprintf(stderr, "[Naushad] Value of Literal is %s\n", yylval->__pField);
+  return(PARAM);
+}
+
+<HTTP_EXT_CHUNK_NAME_ST>{EQ} {
+  BEGIN(HTTP_EXT_CHUNK_VALUE_ST);
+  fprintf(stderr, "[Naushad] Got the = now\n");
+  return('=');
+}
+
+<HTTP_EXT_CHUNK_NAME_ST>{CRLF} {
+  BEGIN(HTTP_CHUNKED_BOBY_ST);  
+  return(CRLF);
+}
+
+
 
 <HTTP_EXT_CHUNK_VALUE_ST>{CHUNK_EXT_VALUE} {
   yylval->__pValue = malloc(yyleng + 1);

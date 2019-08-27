@@ -47,7 +47,8 @@ void __logRaw(const char *fileName,
     va_end(args);
   }
 
-  syslog(syslogLevels[LOG_DEBUG], "%s", temp1);
+  //syslog(syslogLevels[LOG_DEBUG], "%s", temp1);
+  fprintf(stderr, "%s", temp1);
 }
 
 /*

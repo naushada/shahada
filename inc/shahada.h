@@ -138,9 +138,16 @@ __http_headers_t *__httpInsertMimeHeader(__http_headers_t *headers,
                                          char *value);
 
 __http_body_t *__httpInsertBody(__http_body_t *head, char *body);
+
 __http_body_t *__httpInsertChunkedBody(__http_body_t *head, 
                                        int length, 
                                        char *body);
+
+__http_body_t *__httpInsertChunkedWithToken(__http_body_t *head, 
+                                            int length, 
+                                            char *param,
+                                            char *value,
+                                            char *body);
 
 __qs_param_t *__httpInsertQsParam(__qs_param_t *qsParam, 
                                   char *param, 
