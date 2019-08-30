@@ -141,7 +141,7 @@ char *__testHttpChunkedWithExtRsp(char *body)
                 "First\r\n"
                 "d;quality=1.0\r\n"
                 "Hello, world!\r\n"
-                "e;file=abc.txt;quality=0.7\r\n"
+                "e;file=abc.txt\r\n"
                 "The Next Chunk\r\n"
                 "8;last\r\n"
                 "Last one\r\n"

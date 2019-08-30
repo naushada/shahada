@@ -68,6 +68,14 @@ __http_body_t *__httpInsertChunkedBody(__http_body_t *head,
                                        int length, 
                                        char *body)
 {
+  return(__httpInsertChunkedWithToken(head, 
+                               length, 
+                               /*param*/
+                               NULL,
+                               /*value*/
+                               NULL,
+                               body));
+#if 0
   __http_body_t *tmp = NULL;
   tmp = (__http_body_t *)malloc(sizeof(__http_body_t));
   assert(tmp != NULL);
@@ -91,6 +99,7 @@ __http_body_t *__httpInsertChunkedBody(__http_body_t *head,
 
   tt->__next = tmp;
   return(head);
+#endif
 }
 
 /*
@@ -108,8 +117,35 @@ __http_body_t *__httpInsertChunkedWithToken(__http_body_t *head,
                                             char *value,
                                             char *body)
 {
-      
+  __http_body_t *tmp = NULL;
+  tmp = (__http_body_t *)malloc(sizeof(__http_body_t));
+  assert(tmp != NULL);
+  memset((void *)tmp, 0, sizeof(__http_body_t));
+
+  tmp->__bodyLen = length;
+  tmp->__httpBody = (char *)malloc(length);
+  assert(tmp->__httpBody != NULL);
+
+  memset((void *)tmp->__httpBody, 0, length);
+  memcpy((void *)tmp->__httpBody, body, length);
+  tmp->__next = NULL;
+
+  tmp->__param = param ? strdup(param): param;
+  tmp->__value = value ? strdup(value) : value;
+  free(body);
+
+  if(!head)
+  {
+    return(tmp);    
+  }
+
+  __http_body_t *tt = head;
+  for(; tt->__next; tt = tt->__next) ;
+
+  tt->__next = tmp;
+  return(head);
 }
+
 /*
  * @brief 
  * @param head 

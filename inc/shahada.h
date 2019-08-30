@@ -90,6 +90,8 @@ struct __http_body
 {
   int  __bodyLen;								
   char *__httpBody;
+  char *__param;
+  char *__value;
   struct __http_body *__next;		
 };
 

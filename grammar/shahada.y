@@ -32,7 +32,7 @@ typedef void *yyscan_t;
 }
 
 /*! tokens are looked in lex file for pattern matching*/
-%token <__str> lSTRING HTTP_METHOD HTTP_VERSION RESOURCE CRLF SPACE CHUNK_EXT
+%token <__str> lSTRING HTTP_METHOD HTTP_VERSION RESOURCE CRLF SPACE
 %token <__pField>  PARAM
 %token <__pValue>  VALUE
 %token <__status_code> STATUS_CODE
@@ -81,15 +81,15 @@ message_body
   | message_body CHUNK_LENGTH CRLF lSTRING CRLF       {$$ = __httpInsertChunkedBody($1, $2, $4);}
   | message_body CHUNK_LENGTH CRLF lSTRING CRLF '0'   {$$ = __httpInsertChunkedBody($1, $2, $4);}
    /*Chunked followed by chunk-extension.*/
-  | CHUNK_LENGTH CHUNK_EXT PARAM CRLF lSTRING CRLF                  {$$ = __httpInsertChunkedWithToken(NULL, $1, $3, NULL, $5);}
-  | CHUNK_LENGTH CHUNK_EXT PARAM CRLF lSTRING CRLF '0'              {$$ = __httpInsertChunkedWithToken(NULL, $1, $3, NULL, $5);}
-  | message_body CHUNK_LENGTH CHUNK_EXT PARAM CRLF lSTRING CRLF     {$$ = __httpInsertChunkedWithToken($1, $2, $4, NULL, $6);}
-  | message_body CHUNK_LENGTH CHUNK_EXT PARAM CRLF lSTRING CRLF '0' {$$ = __httpInsertChunkedWithToken($1, $2, $4, NULL, $6);}
+  | CHUNK_LENGTH ';' PARAM CRLF lSTRING CRLF                  {$$ = __httpInsertChunkedWithToken(NULL, $1, $3, NULL, $5);}
+  | CHUNK_LENGTH ';' PARAM CRLF lSTRING CRLF '0'              {$$ = __httpInsertChunkedWithToken(NULL, $1, $3, NULL, $5);}
+  | message_body CHUNK_LENGTH ';' PARAM CRLF lSTRING CRLF     {$$ = __httpInsertChunkedWithToken($1, $2, $4, NULL, $6);}
+  | message_body CHUNK_LENGTH ';' PARAM CRLF lSTRING CRLF '0' {$$ = __httpInsertChunkedWithToken($1, $2, $4, NULL, $6);}
    /*Chunked with optional chunked-value.*/
-  | CHUNK_LENGTH CHUNK_EXT PARAM '=' VALUE CRLF lSTRING CRLF        {$$ = __httpInsertChunkedWithToken(NULL, $1, $3, $5, $7);}
-  | CHUNK_LENGTH CHUNK_EXT PARAM '=' VALUE CRLF lSTRING CRLF '0'    {$$ = __httpInsertChunkedWithToken(NULL, $1, $3, $5, $7);}
-  | message_body CHUNK_LENGTH CHUNK_EXT PARAM '=' VALUE CRLF lSTRING CRLF  {$$ = __httpInsertChunkedWithToken($1, $2, $4, $6, $8);}
-  | message_body CHUNK_LENGTH CHUNK_EXT PARAM '=' VALUE CRLF lSTRING CRLF '0' {$$ = __httpInsertChunkedWithToken($1, $2, $4, $6, $8);}
+  | CHUNK_LENGTH ';' PARAM '=' VALUE CRLF lSTRING CRLF        {$$ = __httpInsertChunkedWithToken(NULL, $1, $3, $5, $7);}
+  | CHUNK_LENGTH ';' PARAM '=' VALUE CRLF lSTRING CRLF '0'    {$$ = __httpInsertChunkedWithToken(NULL, $1, $3, $5, $7);}
+  | message_body CHUNK_LENGTH ';' PARAM '=' VALUE CRLF lSTRING CRLF  {$$ = __httpInsertChunkedWithToken($1, $2, $4, $6, $8);}
+  | message_body CHUNK_LENGTH ';' PARAM '=' VALUE CRLF lSTRING CRLF '0' {$$ = __httpInsertChunkedWithToken($1, $2, $4, $6, $8);}
   ; 
 
 mime_headers

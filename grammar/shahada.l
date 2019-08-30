@@ -56,7 +56,7 @@ MIME_PARAM           {ALPHANUM}+
 MIME_VALUE           [a-zA-Z0-9\.\/_\-\'\"; \*=;,+]+ 
 
  /*Query-string parameters of form field-name=field-value*/
-OCTET                [\x20-\x7F]
+OCTET                [\x20-\x7F]+
 QS_PARAM             {ALPHANUM}+
 QS_VALUE             [0-9a-zA-Z\/#\.\-_+!=]+
 
@@ -66,7 +66,8 @@ STATUS_CODE          {DIGIT}{3}
  /*The Printable ASCII Character.*/
  /*HTTP_BODY            {OCTET}+*/
 HTTP_BODY            [0-9a-zA-Z\&\-_+\/ \t,]+
-LENGTH         [1-9a-fA-F][0-9a-fA-F]*
+LENGTH               [1-9a-fA-F][0-9a-fA-F]*
+CHUNK_LENGTH         {LENGTH}
 ZERO                 (0)
 SEMI_COLON           (;)
 CHUNK_EXT_NAME       [0-9a-zA-Z\.\-\"\'\!\#\$\%\&\*\^+_\`\~]+
@@ -218,7 +219,7 @@ CHUNK_EXT_VALUE      {CHUNK_EXT_NAME}
   return(CRLF);
 }
 
-<HTTP_BODY_ST>{LENGTH} {
+<HTTP_BODY_ST>{CHUNK_LENGTH} {
   /*hex-string without 0x prefix.*/    
   yylval->__chunk_length = strtol(yytext, NULL, 16);
   fprintf(stderr, "[Naushad] Chunked Length(HTTP_BODY_ST) is %d\n", yylval->__chunk_length);
@@ -226,7 +227,7 @@ CHUNK_EXT_VALUE      {CHUNK_EXT_NAME}
   return(CHUNK_LENGTH);
 }
 
-<HTTP_CHUNKED_BOBY_ST>{LENGTH} {
+<HTTP_CHUNKED_BOBY_ST>{CHUNK_LENGTH} {
   /*hex-string without 0x prefix.*/    
   yylval->__chunk_length = strtol(yytext, NULL, 16);
   fprintf(stderr, "[Naushad] Chunked Length is %d\n", yylval->__chunk_length);
@@ -251,7 +252,7 @@ CHUNK_EXT_VALUE      {CHUNK_EXT_NAME}
 <HTTP_CHUNKED_BOBY_ST>{SEMI_COLON} {
   fprintf(stderr, "[Naushad]%s:%d ext %s\n", __FILE__, __LINE__, yytext);  
   BEGIN(HTTP_EXT_CHUNK_NAME_ST);
-  return(CHUNK_EXT);
+  return(';');
 }
 
 <HTTP_CHUNKED_BOBY_ST>{EQ} {
@@ -301,7 +302,7 @@ CHUNK_EXT_VALUE      {CHUNK_EXT_NAME}
   return(VALUE);
 }
 
-<HTTP_BODY_ST>{HTTP_BODY} {
+<HTTP_BODY_ST>{OCTET} {
   yylval->__str = malloc(yyleng + 1);
   assert(yylval->__str != NULL);
   memset(yylval->__str, 0, yyleng + 1);
