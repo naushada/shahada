@@ -168,5 +168,6 @@ int shahadaGetProtocol(void *pMsg);
 
 void shahadaHttpParserEnd(void *pIn);
 
+char *shahadaGetBody(int chunkNumber, void *pIn, int *chunkedLen);
 
 #endif /*__HTTP_H__*/

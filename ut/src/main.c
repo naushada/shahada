@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "shahada.h"
 #include "test.h"
+#include "llog.h"
 
 
 int yydebug = 1;
@@ -60,6 +61,24 @@ int main(int argc, char **argv)
     //fprintf(stderr, "method is %d\n", shahadaGetMethod(pMsg));
     //fprintf(stderr, "value is %s\n", tt = shahadaGetQsParamValue("a", pMsg));
     //free(tt);
+
+    if((ch - '0') == 9)
+    {
+      int len = 0;  
+      char *outPtr = shahadaGetBody(1, pMsg, &len);
+      DEBUG_PRINTF("", 0, "The Http Body is  >>>> %s len %d", outPtr, len);
+      free(outPtr);
+
+      outPtr = shahadaGetBody(0, pMsg, &len);
+      DEBUG_PRINTF("", 0, "The Http Body is  >>>> %s len %d", outPtr, len);
+      free(outPtr);
+      outPtr = shahadaGetBody(3, pMsg, &len);
+      DEBUG_PRINTF("", 0, "The Http Body is  >>>> %s len %d", outPtr, len);
+      free(outPtr);
+      outPtr = shahadaGetBody(7, pMsg, &len);
+      DEBUG_PRINTF("", 0, "The Http Body is  >>>> %s len %d", outPtr, len);
+      free(outPtr);
+    }
 
     shahadaHttpParserEnd(pMsg);
   }while(1);

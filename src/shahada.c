@@ -859,3 +859,59 @@ void shahadaHttpParserEnd(void *pIn)
   /*Return the control explicitly.*/
   return;
 }
+
+/*
+ * @brief  This function is to get the HTTP Body for a given chunk number.
+ * @param chunkNumber http body to be returned for this chunk.
+ * @param  Pointer to __http_message_t which was return by parser.
+ * @param  chunkedLen is the length of http body.
+ * @return Pointer to the HTTP Body. The caller mut free this memory.
+ * */
+char *shahadaGetBody(int chunkNumber, void *pIn, int *chunkedLen)
+{
+  char *outPtr = NULL;  
+  __http_message_t *pMsg = (__http_message_t *)pIn;
+  do 
+  {
+    if(!pMsg)
+    {
+      DEBUG_PRINTF("",0, "Pointer to pIn is NULL");
+      break;
+    }
+
+    if(pMsg->__httpBody)
+    {
+      __http_body_t *head = pMsg->__httpBody;
+
+      if(head && !chunkNumber)
+      {
+        *chunkedLen = head->__bodyLen;
+        outPtr = (char *)malloc(*chunkedLen);
+        assert(outPtr != NULL);
+        memset((void *)outPtr, 0, *chunkedLen);
+        memcpy(outPtr, head->__httpBody, head->__bodyLen);
+        break;
+      }
+
+      int count = 0;
+      while(head)
+      {
+        if(count == chunkNumber)
+        {
+          *chunkedLen = head->__bodyLen;
+          outPtr = (char *)malloc(*chunkedLen);
+          assert(outPtr != NULL);
+
+          memcpy(outPtr, head->__httpBody, head->__bodyLen);
+          break;   
+        }
+
+        head = head->__next;
+        count++;
+      }
+    }
+
+  }while(0);
+
+  return(outPtr);
+}
