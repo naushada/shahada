@@ -4,6 +4,7 @@
 #include <assert.h>
 #include "shahada.tab.h"								
 #include "shahada.h"
+#include "llog.h"
 
 extern int yyerror(yyscan_t yyscanner, const char *s);
 
@@ -55,19 +56,19 @@ BODY_START           (\r\n\r\n\r\n|\r\n\r\n)
 MIME_PARAM           {ALPHANUM}+
 MIME_VALUE           [a-zA-Z0-9\.\/_\-\'\"; \*=;,+]+ 
 
- /*Query-string parameters of form field-name=field-value*/
+ /*The Printable ASCII Character.*/
 OCTET                [\x20-\x7F]+
+ /*Query-string parameters of form field-name=field-value*/
 QS_PARAM             {ALPHANUM}+
 QS_VALUE             [0-9a-zA-Z\/#\.\-_+!=]+
 
  /*Reason Phrase*/
 STATUS_STR           [a-zA-Z\- \"\']+
 STATUS_CODE          {DIGIT}{3}
- /*The Printable ASCII Character.*/
- /*HTTP_BODY            {OCTET}+*/
-HTTP_BODY            [0-9a-zA-Z\&\-_+\/ \t,]+
+HTTP_BODY            [0-9a-zA-Z\&\-_+\/ \t,%]+
 LENGTH               [1-9a-fA-F][0-9a-fA-F]*
-CHUNK_LENGTH         {LENGTH}
+CHUNK_LENGTH_WIT_EXT         {LENGTH}(;)
+JUST_CHUNK_LENGTH    {LENGTH}(\r\n)
 ZERO                 (0)
 SEMI_COLON           (;)
 CHUNK_EXT_NAME       [0-9a-zA-Z\.\-\"\'\!\#\$\%\&\*\^+_\`\~]+
@@ -214,23 +215,31 @@ CHUNK_EXT_VALUE      {CHUNK_EXT_NAME}
 
  /*! HTTP Body ends with single CRLF*/
 <HTTP_BODY_ST>{CRLF} {
-  /*!move to INITIAL state.*/    
-  BEGIN(INITIAL);  
   return(CRLF);
 }
 
-<HTTP_BODY_ST>{CHUNK_LENGTH} {
+<HTTP_BODY_ST>{ZERO} {
+  BEGIN(INITIAL);
+  return('0');
+}
+
+<HTTP_BODY_ST>{JUST_CHUNK_LENGTH} {
   /*hex-string without 0x prefix.*/    
   yylval->__chunk_length = strtol(yytext, NULL, 16);
-  fprintf(stderr, "[Naushad] Chunked Length(HTTP_BODY_ST) is %d\n", yylval->__chunk_length);
+  return(CHUNK_LENGTH);
+}
+
+<HTTP_BODY_ST>{CHUNK_LENGTH_WIT_EXT} {
+  /*hex-string without 0x prefix.*/    
+  yylval->__chunk_length = strtol(yytext, NULL, 16);
   BEGIN(HTTP_CHUNKED_BOBY_ST);
   return(CHUNK_LENGTH);
 }
 
-<HTTP_CHUNKED_BOBY_ST>{CHUNK_LENGTH} {
+<HTTP_CHUNKED_BOBY_ST>{CHUNK_LENGTH_WIT_EXT} {
   /*hex-string without 0x prefix.*/    
   yylval->__chunk_length = strtol(yytext, NULL, 16);
-  fprintf(stderr, "[Naushad] Chunked Length is %d\n", yylval->__chunk_length);
+  BEGIN(HTTP_EXT_CHUNK_NAME_ST);
   return(CHUNK_LENGTH);
 }
 
@@ -250,14 +259,13 @@ CHUNK_EXT_VALUE      {CHUNK_EXT_NAME}
 }
 
 <HTTP_CHUNKED_BOBY_ST>{SEMI_COLON} {
-  fprintf(stderr, "[Naushad]%s:%d ext %s\n", __FILE__, __LINE__, yytext);  
+  DEBUG_PRINTF("", 0, "ext %s", yytext);  
   BEGIN(HTTP_EXT_CHUNK_NAME_ST);
   return(';');
 }
 
 <HTTP_CHUNKED_BOBY_ST>{EQ} {
   BEGIN(HTTP_EXT_CHUNK_VALUE_ST);
-  fprintf(stderr, "[Naushad] Got the = now\n");
   return('=');
 }
 
@@ -267,7 +275,6 @@ CHUNK_EXT_VALUE      {CHUNK_EXT_NAME}
   assert(yylval->__str != NULL);
   memset(yylval->__str, 0, yyleng + 1);
   memcpy(yylval->__str, yytext, yyleng);
-  fprintf(stderr, "[Naushad]%s:%d body is %s\n", __FILE__, __LINE__,yytext);
   return(lSTRING);
 }
 
@@ -276,13 +283,11 @@ CHUNK_EXT_VALUE      {CHUNK_EXT_NAME}
   assert(yylval->__pField != NULL);
   memset(yylval->__pField, 0, yyleng + 1);
   memcpy(yylval->__pField, yytext, yyleng);
-  fprintf(stderr, "[Naushad] Value of Literal is %s\n", yylval->__pField);
   return(PARAM);
 }
 
 <HTTP_EXT_CHUNK_NAME_ST>{EQ} {
   BEGIN(HTTP_EXT_CHUNK_VALUE_ST);
-  fprintf(stderr, "[Naushad] Got the = now\n");
   return('=');
 }
 
@@ -300,6 +305,12 @@ CHUNK_EXT_VALUE      {CHUNK_EXT_NAME}
   memcpy(yylval->__pValue, yytext, yyleng);
   BEGIN(HTTP_CHUNKED_BOBY_ST);
   return(VALUE);
+}
+
+ /*HTTP Chunked Body will always end with 0 \r\n*/
+<HTTP_BOBY_ST>{ZERO} {
+  BEGIN(INITIAL);
+  return('0');
 }
 
 <HTTP_BODY_ST>{OCTET} {

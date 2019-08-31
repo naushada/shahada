@@ -91,7 +91,7 @@ char *__testHttpMultipleChunkedRsp(char *body)
                     "1E\r\n"
                     "a=b&c=d&x=zzzzzzyyyyzzzyyyzzyy\r\n"
                     "1E\r\n"
-                    "a=b&c=d&x=zzzzzzyyyyzzzyyyzzyy\r\n"
+                    "mma=b&c=d&x=zzzzzzyyyyzzzyyyzzyy\r\n"
                     "0\r\n";
 
   return(strdup(buff));
@@ -139,11 +139,11 @@ char *__testHttpChunkedWithExtRsp(char *body)
                 "\r\n"
                 "5\r\n"
                 "First\r\n"
-                "d;quality=1.0\r\n"
+                "d\r\n"
                 "Hello, world!\r\n"
-                "e;file=abc.txt\r\n"
+                "e\r\n"
                 "The Next Chunk\r\n"
-                "8;last\r\n"
+                "8\r\n"
                 "Last one\r\n"
                 "0\r\n";
 
