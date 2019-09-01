@@ -269,7 +269,7 @@ CHUNK_EXT_VALUE      {CHUNK_EXT_NAME}
   return('=');
 }
 
-<HTTP_CHUNKED_BOBY_ST>{HTTP_BODY} {
+<HTTP_CHUNKED_BOBY_ST>{OCTET} {
   /*HTTP body may or may not be terminated with '\0'*/    
   yylval->__str = malloc(yyleng + 1);
   assert(yylval->__str != NULL);
