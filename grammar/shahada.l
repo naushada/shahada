@@ -67,7 +67,7 @@ STATUS_STR           [a-zA-Z\- \"\']+
 STATUS_CODE          {DIGIT}{3}
 HTTP_BODY            [0-9a-zA-Z\&\-_+\/ \t,%]+
 LENGTH               [1-9a-fA-F][0-9a-fA-F]*
-CHUNK_LENGTH_WIT_EXT         {LENGTH}(;)
+CHUNK_LENGTH_WIT_EXT {LENGTH}(;)
 JUST_CHUNK_LENGTH    {LENGTH}(\r\n)
 ZERO                 (0)
 SEMI_COLON           (;)

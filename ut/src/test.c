@@ -2,6 +2,9 @@
 #define __TEST_C__
 #include <string.h>
 #include <stdio.h>
+#include <wchar.h>
+#include <locale.h>
+
 
 char *__testHttpReqPost(void)
 {
@@ -152,16 +155,31 @@ char *__testHttpChunkedWithExtRsp(char *body)
 
 int __getInput(void)
 {
-  fprintf(stderr, "1.......__testHttpReqPost \n"
-                  "2.......__testHttpReqGet \n"
-                  "3.......__testHtpRsp \n"
-                  "4.......__testHttpReqWithQs \n"
-                  "5.......__testHttpRspWithBody \n"
-                  "6.......__testHttpReqWithBody \n"
-                  "7.......__testHttpChunkedRsp \n"
-                  "8.......__testHttpMultipleChunkedRsp \n"
-                  "9.......__testHttpChunkedWithExtRsp \n"
-                  "10......End \n");
+  setlocale(LC_ALL, "");
+  wchar_t mc = 0x0628;
+  mc = 0x062B;
+  fprintf(stderr, "Naushad %lc\n", mc);
+  fprintf(stderr, "1(%lc).......__testHttpReqPost \n"
+                  "2(%lc).......__testHttpReqGet \n"
+                  "3(%lc).......__testHtpRsp \n"
+                  "4(%lc).......__testHttpReqWithQs \n"
+                  "5(%lc).......__testHttpRspWithBody \n"
+                  "6(%lc).......__testHttpReqWithBody \n"
+                  "7(%lc).......__testHttpChunkedRsp \n"
+                  "8(%lc).......__testHttpMultipleChunkedRsp \n"
+                  "9(%lc).......__testHttpChunkedWithExtRsp \n"
+                  "10(%lc%lc)......End \n",
+                  0x06F1,
+                  0x06F2,
+                  0x06F3,
+                  0x06F4,
+                  0x06F5,
+                  0x06F6,
+                  0x06F7,
+                  0x06F8,
+                  0x06F9,
+                  0x06F1,
+                  0x06F0);
   return(getchar());
 
 }
